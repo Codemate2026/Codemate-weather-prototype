@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CODEMATE — National Weather Big Data Analytics Platform | SIH26069</title>
+<meta name="description" content="AI-assisted multi-source weather intelligence platform for India — SIH 2026, Problem Statement 26069, Ministry of Earth Sciences / IMD.">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<style>
+/* =========================================================
+   CODEMATE — DESIGN TOKENS
+   ========================================================= */
+:root{
+  --navy-950:#081b30;
+  --navy-900:#0c2a4a;
+  --navy-800:#123a5e;
+  --navy-700:#1c4d78;
+  --gold-600:#a97e22;
+  --gold-500:#c99a3b;
+  --gold-300:#e7c878;
+  --gold-100:#faf1dc;
+  --bg:#f2f5f8;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --text:#16232f;
+  --text-soft:#3d4f5f;
+  --muted:#6d7f91;
+  --border:#dde5ec;
+  --border-soft:#eaeff4;
+  --success-700:#166534;
+  --success-100:#e4f5ea;
+  --warn-700:#95590a;
+  --warn-100:#fdf0dc;
+  --crit-700:#9f2626;
+  --crit-100:#fbe7e6;
+  --info-700:#155e9a;
+  --info-100:#e6f1fb;
+  --violet-700:#5b3ea6;
+  --violet-100:#efe9fb;
+  --shadow-sm:0 1px 2px rgba(12,42,74,.06), 0 1px 1px rgba(12,42,74,.04);
+  --shadow-md:0 6px 20px rgba(12,42,74,.09);
+  --shadow-lg:0 20px 50px rgba(8,27,48,.18);
+  --radius:14px;
+  --radius-sm:9px;
+  --serif:"Newsreader", Georgia, serif;
+  --sans:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, monospace;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+.hidden{display:none!important}
+:focus-visible{outline:2px solid var(--gold-500);outline-offset:2px}
+::selection{background:var(--gold-300)}
+
+h1,h2,h3{font-family:var(--serif);font-weight:600;color:var(--navy-900);margin:0}
+
+/* =========================================================
+   LANDING / ROLE SELECT
+   ========================================================= */
+.landing{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(201,154,59,.16), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 0%, rgba(28,77,120,.5), transparent 55%),
+    linear-gradient(160deg, var(--navy-950), var(--navy-900) 55%, var(--navy-800));
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+}
+.landing-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:26px 5vw 0;
+}
+.landing-brand{display:flex;align-items:center;gap:12px}
+.brand-mark{
+  width:44px;height:44px;border-radius:11px;
+  background:linear-gradient(150deg,var(--gold-300),var(--gold-600));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-weight:700;font-size:19px;color:var(--navy-950);
+}
+.brand-name{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:.2px}
+.brand-tag{font-size:10.5px;letter-spacing:1.6px;color:#a9c0d6;margin-top:1px}
+.landing-meta{
+  text-align:right;font-size:11.5px;color:#9db3c9;line-height:1.6;
+}
+.landing-meta b{color:#e9d8b0;font-weight:600}
+
+.landing-hero{
+  flex:1;
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:40px;
+  align-items:center;
+  padding:5vh 6vw 5vh;
+  max-width:1320px;
+  margin:0 auto;
+  width:100%;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11.5px;letter-spacing:1.4px;color:var(--gold-300);
+  border:1px solid rgba(231,200,120,.35);
+  background:rgba(231,200,120,.08);
+  padding:6px 12px;border-radius:30px;margin-bottom:22px;
+}
+.hero-title{
+  font-family:var(--serif);
+  font-size:clamp(30px,4vw,46px);
+  line-height:1.12;
+  font-weight:600;
+  color:#fff;
+  max-width:14ch;
+}
+.hero-title em{font-style:italic;color:var(--gold-300);font-weight:500}
+.hero-sub{
+  margin-top:18px;font-size:15.5px;line-height:1.65;color:#c3d3e2;max-width:52ch;
+}
+.hero-stats{
+  display:flex;gap:28px;margin-top:30px;flex-wrap:wrap;
+}
+.hero-stat b{display:block;font-family:var(--serif);font-size:24px;color:#fff}
+.hero-stat span{font-size:11px;color:#96acc2;letter-spacing:.3px}
+
+.role-panel{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:20px;
+  padding:8px;
+  backdrop-filter:blur(6px);
+}
+.role-card{
+  display:block;width:100%;text-align:left;
+  background:rgba(8,27,48,.35);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:15px;
+  padding:22px 20px;
+  margin-bottom:8px;
+  transition:.18s ease;
+}
+.role-card:last-child{margin-bottom:0}
+.role-card:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(231,200,120,.5);
+  transform:translateY(-2px);
+}
+.role-card .rc-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.rc-icon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  background:rgba(231,200,120,.14);border:1px solid rgba(231,200,120,.3);
+}
+.role-card h3{color:#fff;font-size:16.5px}
+.role-card p{margin:0;color:#aec2d5;font-size:12.5px;line-height:1.55}
+.rc-cta{
+  margin-top:13px;font-size:12px;font-weight:600;color:var(--gold-300);
+  display:flex;align-items:center;gap:6px;
+}
+
+.landing-foot{
+  border-top:1px solid rgba(255,255,255,.1);
+  padding:14px 6vw 20px;
+  font-size:11px;color:#849ab1;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+
+@media(max-width:900px){
+  .landing-hero{grid-template-columns:1fr;padding:4vh 6vw}
+  .landing-meta{display:none}
+}
+
+/* =========================================================
+   APP SHELL
+   ========================================================= */
+.app{min-height:100vh}
+
+.topbar{
+  height:64px;
+  background:linear-gradient(90deg,var(--navy-950),var(--navy-800));
+  color:#fff;
+  display:flex;align-items:center;
+  padding:0 18px;gap:14px;
+  position:sticky;top:0;z-index:500;
+  box-shadow:0 2px 14px rgba(8,27,48,.25);
+}
+.topbar .brand-mark{width:36px;height:36px;font-size:15px;border-radius:9px}
+.topbar-title{display:flex;flex-direction:column;line-height:1.2}
+.topbar-title b{font-family:var(--serif);font-size:15px;font-weight:600}
+.topbar-title span{font-size:9.5px;letter-spacing:1.3px;color:#a9c0d6}
+.topbar-spacer{flex:1}
+.hamburger{
+  display:none;width:38px;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.06);color:#fff;font-size:18px;align-items:center;justify-content:center;
+}
+.role-toggle{
+  display:flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;padding:3px;gap:2px;
+}
+.role-toggle button{
+  border:0;background:transparent;color:#c3d3e2;padding:8px 13px;border-radius:8px;font-size:12.5px;font-weight:600;
+}
+.role-toggle button.on{background:var(--gold-500);color:var(--navy-950)}
+.topbar-exit{
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#dce7f1;
+  padding:8px 12px;border-radius:9px;font-size:12px;font-weight:600;
+}
+
+.shell{display:flex}
+.sidebar{
+  width:250px;flex:none;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  min-height:calc(100vh - 64px);
+  position:sticky;top:64px;
+  padding:16px 10px 20px;
+  overflow-y:auto;
+}
+.side-role-badge{
+  display:flex;gap:9px;align-items:center;
+  padding:10px 10px;margin:0 4px 14px;
+  background:var(--surface-2);border:1px solid var(--border-soft);border-radius:11px;
+}
+.srb-icon{
+  width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:var(--navy-900);color:#fff;font-size:13px;font-weight:700;
+}
+.srb-text b{display:block;font-size:12px;color:var(--navy-900)}
+.srb-text span{font-size:10px;color:var(--muted)}
+
+.nav-label{
+  font-size:10px;letter-spacing:1.2px;color:#9aa9b7;font-weight:700;
+  margin:16px 12px 6px;
+}
+.nav-label:first-of-type{margin-top:2px}
+.nav-item{
+  width:100%;display:flex;align-items:center;gap:10px;
+  border:0;background:transparent;text-align:left;
+  padding:9.5px 11px;border-radius:9px;color:var(--text-soft);
+  font-size:13px;font-weight:600;margin-bottom:2px;
+}
+.nav-item .ic{width:18px;text-align:center;font-size:14px;opacity:.85}
+.nav-item:hover{background:var(--surface-2);color:var(--navy-900)}
+.nav-item.on{background:var(--info-100);color:var(--info-700)}
+.nav-item.warn-count{
+  margin-left:auto;background:var(--crit-100);color:var(--crit-700);
+  font-size:10px;font-weight:800;border-radius:20px;padding:2px 7px;
+}
+.side-foot{
+  margin-top:18px;padding:12px 12px;border-top:1px solid var(--border-soft);
+  font-size:10.5px;color:var(--muted);line-height:1.6;
+}
+
+.main{flex:1;min-width:0;padding:24px 28px 60px}
+
+/* =========================================================
+   PAGE HEADER / SHARED
+   ========================================================= */
+.page-head{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  margin-bottom:22px;flex-wrap:wrap;
+}
+.eyebrow{
+  font-size:10.5px;letter-spacing:1.4px;color:var(--gold-600);font-weight:700;margin-bottom:5px;
+}
+.page-head h1{font-size:26px}
+.page-head p{margin:6px 0 0;color:var(--muted);font-size:13.3px;max-width:62ch}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:30px;font-size:11px;font-weight:700;white-space:nowrap;
+}
+.pill.green{background:var(--success-100);color:var(--success-700)}
+.pill.red{background:var(--crit-100);color:var(--crit-700)}
+.pill.gold{background:var(--gold-100);color:var(--gold-600)}
+.pill.blue{background:var(--info-100);color:var(--info-700)}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:18px 20px;
+}
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+.section-head h2{font-size:15.5px}
+.section-head p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.linklike{
+  border:1px solid var(--border);background:var(--surface-2);border-radius:8px;
+  padding:7px 12px;font-size:11.5px;font-weight:700;color:var(--info-700);white-space:nowrap;
+}
+
+.grid{display:grid;gap:16px}
+.g-cols-2{grid-template-columns:1fr 1fr}
+.g-cols-3{grid-template-columns:repeat(3,1fr)}
+.g-cols-4{grid-template-columns:repeat(4,1fr)}
+.g-cols-5{grid-template-columns:repeat(5,1fr)}
+
+@media(max-width:1150px){.g-cols-5{grid-template-columns:repeat(3,1fr)}.g-cols-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.g-cols-2,.g-cols-3,.g-cols-4,.g-cols-5{grid-template-columns:1fr}}
+
+/* KPI */
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 17px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+}
+.kpi::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-accent,var(--navy-800));
+}
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.2px}
+.kpi-icon{font-size:16px;opacity:.8}
+.kpi-val{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--navy-900);margin-top:10px}
+.kpi-note{font-size:10.7px;color:var(--muted);margin-top:3px}
+
+/* Pipeline */
+.flow{display:flex;align-items:stretch;gap:6px;overflow-x:auto;padding:2px 0 8px}
+.flow-step{
+  min-width:120px;background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:11px;padding:12px 10px;text-align:center;flex:none;
+}
+.flow-step .fnum{
+  width:20px;height:20px;border-radius:50%;background:var(--navy-900);color:#fff;
+  font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 7px;
+}
+.flow-step b{font-size:11.5px;color:var(--navy-900);display:block}
+.flow-step span{font-size:9.7px;color:var(--muted);display:block;margin-top:3px;line-height:1.4}
+.flow-arrow{display:flex;align-items:center;color:var(--gold-500);font-size:16px;flex:none}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:11px}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th,td{padding:10px 13px;text-align:left;font-size:12px;border-bottom:1px solid var(--border-soft)}
+th{
+  background:var(--surface-2);color:var(--muted);font-size:10px;letter-spacing:.6px;
+  font-weight:800;text-transform:uppercase;position:sticky;top:0;
+}
+tbody tr:hover td{background:#fbfdff}
+tbody tr:last-child td{border-bottom:0}
+.badge{
+  display:inline-flex;align-items:center;padding:4px 9px;border-radius:20px;font-size:10.5px;font-weight:700;
+}
+.badge.crit{background:var(--crit-100);color:var(--crit-700)}
+.badge.high{background:var(--warn-100);color:var(--warn-700)}
+.badge.med{background:var(--info-100);color:var(--info-700)}
+.badge.low{background:var(--success-100);color:var(--success-700)}
+.badge.st-verified{background:var(--success-100);color:var(--success-700)}
+.badge.st-pending, .badge.st-submitted, .badge.st-underreview, .badge.st-aianalyzed{background:var(--info-100);color:var(--info-700)}
+.badge.st-needsreview{background:var(--warn-100);color:var(--warn-700)}
+.badge.st-rejected{background:var(--crit-100);color:var(--crit-700)}
+.trust-bar{display:flex;align-items:center;gap:7px}
+.trust-bar .track{width:52px;height:6px;background:var(--border-soft);border-radius:6px;overflow:hidden}
+.trust-bar .fill{height:100%;background:linear-gradient(90deg,var(--gold-500),var(--navy-700))}
+.trust-bar b{font-size:11px}
+.src-tag{
+  font-family:var(--mono);font-size:10px;background:var(--surface-2);border:1px solid var(--border-soft);
+  padding:2px 7px;border-radius:6px;color:var(--text-soft);
+}
+.row-btn{
+  border:1px solid var(--border);background:#fff;padding:5px 10px;border-radius:7px;font-size:10.7px;font-weight:700;color:var(--navy-800);
+}
+.row-btn:hover{border-color:var(--navy-700);color:var(--navy-950)}
+
+.filter-bar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+.filter-bar input, .filter-bar select{
+  border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:#fff;font-size:12.3px;
+}
+.filter-bar input{flex:1;min-width:190px}
+.chip{
+  border:1px solid var(--border);background:#fff;padding:7px 13px;border-radius:30px;font-size:11.5px;font-weight:700;color:var(--text-soft);
+}
+.chip.on{background:var(--navy-900);color:#fff;border-color:var(--navy-900)}
+
+.empty-state{padding:34px 10px;text-align:center;color:var(--muted);font-size:13px}
+.empty-state .ee{font-size:26px;margin-bottom:8px}
+
+/* Map */
+.map-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+.map-layout{display:grid;grid-template-columns:1.65fr 1fr;gap:16px;align-items:start}
+#leafletMap{
+  height:520px;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);
+}
+.map-legend-bar{
+  display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--text-soft);
+}
+.map-legend-bar span{display:flex;align-items:center;gap:6px}
+.map-legend-bar i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.map-side{border:1px solid var(--border);border-radius:var(--radius);background:#fff;padding:17px;min-height:520px;box-shadow:var(--shadow-sm)}
+.map-side h3{font-size:14.5px;margin-bottom:12px}
+.info-row{padding:9px 0;border-bottom:1px solid var(--border-soft)}
+.info-row:last-child{border-bottom:0}
+.info-row .il{font-size:10px;color:var(--muted);letter-spacing:.3px}
+.info-row .iv{font-size:13px;font-weight:700;margin-top:2px;color:var(--text)}
+.leaflet-popup-content{font-family:var(--sans);font-size:12.5px}
+.leaflet-popup-content b{color:var(--navy-900)}
+
+/* Forms */
+.form-wrap{max-width:900px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f-grid.full-w{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:11.5px;font-weight:700;color:var(--text-soft)}
+.field .hint{font-size:10.3px;color:var(--muted);font-weight:400}
+.field input, .field select, .field textarea{
+  border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:#fff;color:var(--text);
+}
+.field textarea{min-height:100px;resize:vertical}
+.field input:focus, .field select:focus, .field textarea:focus{
+  border-color:var(--navy-700);box-shadow:0 0 0 3px rgba(28,77,120,.1);outline:none;
+}
+.upload-row{display:flex;gap:12px;flex-wrap:wrap}
+.upload-box{
+  flex:1;min-width:220px;border:1.5px dashed var(--border);border-radius:11px;padding:16px;
+  text-align:center;background:var(--surface-2);
+}
+.upload-box b{display:block;font-size:12px;margin-bottom:3px}
+.upload-box span{font-size:10.5px;color:var(--muted)}
+.upload-box input{margin-top:10px}
+.file-chip{
+  margin-top:9px;font-size:11px;background:var(--success-100);color:var(--success-700);
+  padding:6px 10px;border-radius:8px;display:inline-block;
+}
+.submit-btn{
+  background:var(--navy-900);color:#fff;border:0;padding:13px 22px;border-radius:10px;
+  font-weight:700;font-size:13.5px;margin-top:16px;
+}
+.submit-btn:hover{background:var(--navy-950)}
+.note-box{
+  background:var(--gold-100);border:1px solid var(--gold-300);color:#6b4f11;
+  padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.55;margin-bottom:16px;
+}
+.note-box.blue{background:var(--info-100);border-color:#bcd8ef;color:#0d4b7a}
+
+/* AI page */
+.ai-card{border:1px solid var(--border);border-radius:var(--radius);padding:17px;background:#fff;box-shadow:var(--shadow-sm)}
+.ai-card .aic-icon{
+  width:36px;height:36px;border-radius:9px;background:var(--violet-100);color:var(--violet-700);
+  display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;
+}
+.ai-card h3{font-size:13.7px;margin-bottom:5px}
+.ai-card p{font-size:11.7px;color:var(--muted);line-height:1.55;margin:0 0 9px}
+.ai-card .tagline{font-size:10px;font-weight:700;color:var(--violet-700);background:var(--violet-100);padding:3px 9px;border-radius:20px}
+
+.ai-demo{border:1px solid var(--border);border-radius:var(--radius);padding:20px;background:#fff;box-shadow:var(--shadow-sm)}
+.ai-demo textarea{
+  width:100%;min-height:88px;border:1px solid var(--border);border-radius:9px;padding:11px;margin-top:4px;
+}
+.ai-demo button{margin-top:11px}
+.ai-result{
+  margin-top:16px;border:1px solid var(--border-soft);border-radius:11px;padding:14px 16px;background:var(--surface-2);
+  display:none;
+}
+.ai-result.show{display:block}
+.ai-result .ar-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--border);font-size:12.5px}
+.ai-result .ar-row:last-child{border-bottom:0}
+.ai-result .ar-row b{color:var(--navy-900)}
+
+/* Modal */
+.modal-back{
+  position:fixed;inset:0;background:rgba(8,20,34,.62);display:flex;align-items:center;justify-content:center;
+  padding:20px;z-index:2000;
+}
+.modal{
+  width:min(760px,100%);max-height:88vh;overflow-y:auto;background:#fff;border-radius:17px;box-shadow:var(--shadow-lg);
+}
+.modal-head{
+  padding:17px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;background:#fff;z-index:2;
+}
+.modal-head span{font-size:10px;letter-spacing:1.2px;color:var(--gold-600);font-weight:800}
+.modal-head h2{font-size:18px;margin-top:2px}
+.modal-close{border:0;background:var(--surface-2);width:32px;height:32px;border-radius:8px;font-size:15px}
+.modal-body{padding:18px 20px 22px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.detail-item{background:var(--surface-2);border:1px solid var(--border-soft);border-radius:9px;padding:10px 12px}
+.detail-item span{font-size:9.7px;color:var(--muted);letter-spacing:.3px;display:block}
+.detail-item b{font-size:12.7px;display:block;margin-top:3px}
+.modal-sub{margin-top:17px}
+.modal-sub h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:8px}
+.evidence-img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--border);margin-top:6px}
+.chain{display:flex;gap:6px;flex-wrap:wrap;font-size:10.5px}
+.chain span{background:var(--surface-2);border:1px solid var(--border-soft);padding:5px 10px;border-radius:20px;font-weight:700;color:var(--text-soft)}
+.chain span.done{background:var(--success-100);color:var(--success-700);border-color:transparent}
+.related-item{
+  display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--border-soft);
+  border-radius:9px;margin-bottom:6px;font-size:12px;
+}
+.modal-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.act-btn{border:0;padding:11px 16px;border-radius:9px;font-weight:700;font-size:12.3px;color:#fff}
+.act-btn.verify{background:var(--success-700)}
+.act-btn.review{background:var(--warn-700)}
+.act-btn.reject{background:var(--crit-700)}
+.act-btn:disabled{opacity:.4;cursor:not-allowed}
+.admin-only-note{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* Alerts page */
+.alert-item{
+  display:flex;gap:12px;padding:13px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:#fff;
+}
+.alert-item .al-sev{
+  width:6px;border-radius:5px;flex:none;
+}
+.alert-item .al-sev.crit{background:var(--crit-700)}
+.alert-item .al-sev.high{background:var(--warn-700)}
+.alert-item .al-sev.med{background:var(--info-700)}
+.alert-item h4{margin:0 0 4px;font-size:13px}
+.alert-item p{margin:0;font-size:12px;color:var(--muted);line-height:1.5}
+.alert-item .al-meta{font-size:10.3px;color:var(--muted);margin-top:6px}
+.emergency-card{
+  background:linear-gradient(160deg,var(--navy-950),var(--navy-800));color:#fff;border-radius:var(--radius);
+  padding:22px;box-shadow:var(--shadow-md);
+}
+.emergency-card h2{color:#fff;font-size:18px}
+.emergency-card p{color:#c3d3e2;font-size:12.5px;line-height:1.6;margin:8px 0 15px}
+.em-btns{display:flex;gap:10px;flex-wrap:wrap}
+.em-btns a{
+  background:var(--gold-500);color:var(--navy-950);text-decoration:none;padding:10px 15px;border-radius:9px;
+  font-weight:700;font-size:12.5px;
+}
+.em-btns a.alt{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.em-disclaimer{font-size:10.5px;color:#96acc2;margin-top:13px;line-height:1.5}
+
+/* Source / data cards */
+.source-card{display:flex;gap:12px;border:1px solid var(--border);border-radius:12px;padding:15px;background:#fff}
+.source-card .sc-icon{
+  width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none;
+  background:var(--info-100);
+}
+.source-card h4{font-size:13.3px;margin:0 0 3px}
+.source-card p{font-size:11.7px;color:var(--muted);margin:0 0 8px;line-height:1.5}
+
+/* Toast */
+.toast{
+  position:fixed;right:18px;bottom:18px;background:var(--navy-950);color:#fff;padding:13px 17px;border-radius:11px;
+  box-shadow:var(--shadow-lg);font-size:12.5px;font-weight:600;z-index:3000;display:flex;gap:9px;align-items:center;
+  max-width:320px;animation:toastIn .25s ease;
+}
+.toast .tic{color:var(--gold-300)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Responsive */
+@media(max-width:1000px){
+  .map-layout{grid-template-columns:1fr}
+  #leafletMap{height:400px}
+}
+@media(max-width:860px){
+  .hamburger{display:flex}
+  .role-toggle{display:none}
+  .sidebar{
+    position:fixed;left:0;top:64px;bottom:0;transform:translateX(-104%);transition:.22s;
+    box-shadow:14px 0 30px rgba(8,20,34,.2);z-index:800;width:250px;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .main{padding:16px}
+  .f-grid{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+  .page-head h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING ============ -->
+<div id="landing" class="landing">
+  <div class="landing-top">
+    <div class="landing-brand">
+      <div class="brand-mark">C</div>
+      <div>
+        <div class="brand-name">CODEMATE</div>
+        <div class="brand-tag">WEATHER INTELLIGENCE</div>
+      </div>
+    </div>
+    <div class="landing-meta">
+      <b>SIH26069</b> · National Weather Big Data Analytics Platform<br>
+      Ministry of Earth Sciences · IMD · Disaster Management
+    </div>
+  </div>
+
+  <div class="landing-hero">
+    <div>
+      <div class="hero-eyebrow">● Smart India Hackathon 2026 — Prototype</div>
+      <h1 class="hero-title">Scattered weather signals, turned into <em>verified intelligence.</em></h1>
+      <p class="hero-sub">
+        CODEMATE fuses IMD data, public datasets, social reports and citizen observations into one
+        AI-assisted, human-verified national weather intelligence layer — built for India, mapped in real time.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="statTotal">–</b><span>REPORTS IN DEMO DATASET</span></div>
+        <div class="hero-stat"><b id="statVerified">–</b><span>HUMAN-VERIFIED EVENTS</span></div>
+        <div class="hero-stat"><b>7</b><span>EVENT CATEGORIES TRACKED</span></div>
+        <div class="hero-stat"><b>28</b><span>STATES &amp; UTS COVERED</span></div>
+      </div>
+    </div>
+
+    <div class="role-panel">
+      <button class="role-card" onclick="enterApp('citizen')">
+        <div class="rc-top">
+          <div class="rc-icon">🧑</div>
+          <h3>Citizen / Public User</h3>
+        </div>
+        <p>Report a weather event with location, evidence and description. Track verification status and view live alerts.</p>
+        <div class="rc-cta">Enter as Citizen →</div>
+      </button>
+      <button class="role-card" onclick="enterApp('admin')">
+        <div class="rc-top">
+          <div class="rc-icon">🏛️</div>
+          <h3>Government / IMD Admin</h3>
+        </div>
+        <p>Monitor incoming reports, inspect AI-assisted analysis, correlate sources and verify weather intelligence.</p>
+        <div class="rc-cta">Enter as Government Admin →</div>
+      </button>
+      <div style="padding:12px 12px 4px;font-size:10.8px;color:#9db3c9;line-height:1.6">
+        <b style="color:#e9d8b0">Prototype notice:</b> this demonstration runs entirely in your browser using
+        sample and simulated data to illustrate the proposed SIH26069 workflow. You can switch roles at any time.
+      </div>
+    </div>
+  </div>
+
+  <div class="landing-foot">
+    <span>Team CODEMATE · SIH26069 · Software · Disaster Management</span>
+    <span>Frontend prototype — architecture is backend/API-ready</span>
+  </div>
+</div>
+
+<!-- ============ APPLICATION ============ -->
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="brand-mark">C</div>
+    <div class="topbar-title">
+      <b>CODEMATE</b>
+      <span>NATIONAL WEATHER INTELLIGENCE</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="role-toggle">
+      <button id="toggleCitizen" onclick="setRole('citizen')">🧑 Citizen</button>
+      <button id="toggleAdmin" onclick="setRole('admin')">🏛️ Admin</button>
+    </div>
+    <button class="topbar-exit" onclick="exitApp()">Exit</button>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-role-badge">
+        <div class="srb-icon" id="srbIcon">U</div>
+        <div class="srb-text">
+          <b id="srbTitle">Citizen User</b>
+          <span id="srbSub">Weather reporting portal</span>
+        </div>
+      </div>
+
+      <div class="nav-label">Monitoring</div>
+      <button class="nav-item" data-page="overview" onclick="go('overview')"><span class="ic">▦</span>Overview</button>
+      <button class="nav-item" data-page="map" onclick="go('map')"><span class="ic">🗺️</span>Live Weather Map</button>
+      <button class="nav-item" data-page="reports" onclick="go('reports')"><span class="ic">📥</span>Incoming Reports</button>
+      <button class="nav-item" data-page="investigation" onclick="go('investigation')"><span class="ic">🔎</span>Investigation<span class="nav-item warn-count" id="pendingCount" style="display:none"></span></button>
+
+      <div class="nav-label">Intelligence</div>
+      <button class="nav-item" data-page="ai" onclick="go('ai')"><span class="ic">🤖</span>AI Analysis</button>
+      <button class="nav-item" data-page="analytics" onclick="go('analytics')"><span class="ic">📈</span>Analytics</button>
+      <button class="nav-item" data-page="sources" onclick="go('sources')"><span class="ic">🌐</span>Data Sources</button>
+
+      <div class="nav-label">Citizen</div>
+      <button class="nav-item" data-page="submit" onclick="go('submit')"><span class="ic">📝</span>Report Weather Event</button>
+      <button class="nav-item" data-page="myreports" onclick="go('myreports')"><span class="ic">📋</span>My Reports</button>
+      <button class="nav-item" data-page="alerts" onclick="go('alerts')"><span class="ic">🚨</span>Alerts &amp; Assistance</button>
+
+      <div class="nav-label">System</div>
+      <button class="nav-item" data-page="status" onclick="go('status')"><span class="ic">⚙️</span>System Status</button>
+      <button class="nav-item" onclick="switchRole()"><span class="ic">🔄</span>Switch Role</button>
+
+      <div class="side-foot">
+        <b style="color:var(--navy-900)">CODEMATE Prototype</b><br>
+        SIH26069 · MoES / IMD<br>
+        Disaster Management Theme
+      </div>
+    </aside>
+
+    <main class="main" id="main"></main>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* =========================================================
+   CODEMATE — APPLICATION DATA
+   ========================================================= */
+
+const CITY_GEO = {
+  "Delhi":[28.6139,77.2090,"Delhi"], "Mumbai":[19.0760,72.8777,"Maharashtra"],
+  "Pune":[18.5204,73.8567,"Maharashtra"], "Nagpur":[21.1458,79.0882,"Maharashtra"],
+  "Jaipur":[26.9124,75.7873,"Rajasthan"], "Jodhpur":[26.2389,73.0243,"Rajasthan"],
+  "Ahmedabad":[23.0225,72.5714,"Gujarat"], "Surat":[21.1702,72.8311,"Gujarat"],
+  "Bengaluru":[12.9716,77.5946,"Karnataka"], "Mangaluru":[12.9141,74.8560,"Karnataka"],
+  "Hyderabad":[17.3850,78.4867,"Telangana"], "Chennai":[13.0827,80.2707,"Tamil Nadu"],
+  "Coimbatore":[11.0168,76.9558,"Tamil Nadu"], "Kolkata":[22.5726,88.3639,"West Bengal"],
+  "Siliguri":[26.7271,88.3953,"West Bengal"], "Lucknow":[26.8467,80.9462,"Uttar Pradesh"],
+  "Varanasi":[25.3176,82.9739,"Uttar Pradesh"], "Bhopal":[23.2599,77.4126,"Madhya Pradesh"],
+  "Indore":[22.7196,75.8577,"Madhya Pradesh"], "Patna":[25.5941,85.1376,"Bihar"],
+  "Guwahati":[26.1445,91.7362,"Assam"], "Srinagar":[34.0837,74.7973,"Jammu & Kashmir"],
+  "Jammu":[32.7266,74.8570,"Jammu & Kashmir"], "Chandigarh":[30.7333,76.7794,"Chandigarh"],
+  "Bhubaneswar":[20.2961,85.8245,"Odisha"], "Puri":[19.8135,85.8312,"Odisha"],
+  "Thiruvananthapuram":[8.5241,76.9366,"Kerala"], "Kochi":[9.9312,76.2673,"Kerala"],
+  "Dehradun":[30.3165,78.0322,"Uttarakhand"], "Shimla":[31.1048,77.1734,"Himachal Pradesh"],
+  "Raipur":[21.2514,81.6296,"Chhattisgarh"], "Ranchi":[23.3441,85.3096,"Jharkhand"],
+  "Panaji":[15.4909,73.8278,"Goa"], "Amritsar":[31.6340,74.8723,"Punjab"],
+  "Agartala":[23.8315,91.2868,"Tripura"], "Imphal":[24.8170,93.9368,"Manipur"],
+  "Shillong":[25.5788,91.8933,"Meghalaya"], "Itanagar":[27.0844,93.6053,"Arunachal Pradesh"],
+  "Gangtok":[27.3389,88.6065,"Sikkim"], "Port Blair":[11.6234,92.7265,"Andaman & Nicobar"]
+};
+const CITY_LIST = Object.keys(CITY_GEO).sort();
+const STATE_LIST = [...new Set(Object.values(CITY_GEO).map(v=>v[2]))].sort();
+const EVENTS = ["Heavy Rainfall","Flooding","Thunderstorm","Heatwave","Fog","Dust Storm","Strong Winds","Hailstorm"];
+const SOURCES = ["Citizen","IMD API","Social Media","Public Dataset","Website / Web Source"];
+const STATUS_FLOW = ["Submitted","AI Analyzed","Under Review","Verified","Needs Review","Rejected"];
+
+const KEYWORD_MAP = {
+  "Heavy Rainfall":["rain","rainfall","downpour","showers","drizzle","precipitation"],
+  "Flooding":["flood","flooding","waterlogg","submerged","inundat","overflow"],
+  "Thunderstorm":["thunder","lightning","storm","squall"],
+  "Heatwave":["heat","hot","scorching","temperature","sunstroke"],
+  "Fog":["fog","mist","visibility","smog"],
+  "Dust Storm":["dust","sandstorm","haze"],
+  "Strong Winds":["wind","gusty","breeze","gale"],
+  "Hailstorm":["hail","hailstone"]
+};
+
+const STORAGE_KEY = "codemate_sih26069_v1";
+
+function seedReports(){
+  const rows = [
+    ["IMD API","IMD Automated Feed","Pune","Heavy Rainfall","High","Verified",94,4,"Moderate","Continuous heavy rainfall recorded across Pune district with 82mm in 6 hours.",-6],
+    ["Citizen","Ananya Deshmukh","Mumbai","Flooding","Critical","Verified",88,9,"High","Waterlogging near Andheri subway, vehicles stranded, water entering shops.",-4],
+    ["Social Media","@ChennaiRainAlert","Chennai","Heavy Rainfall","High","Under Review",76,22,"Moderate","Multiple posts tagged #ChennaiRains showing flooded streets in T. Nagar.",-3],
+    ["Citizen","Ravi Teja","Hyderabad","Thunderstorm","Medium","AI Analyzed",81,6,"Low","Loud thunder and lightning near Gachibowli, sudden heavy wind gusts.",-2],
+    ["Public Dataset","IMD Climate Grid","Jaipur","Heatwave","High","Verified",97,1,"High","Gridded temperature dataset shows sustained 44°C+ across western Rajasthan.",-9],
+    ["Website / Web Source","Skymet Weather","Srinagar","Fog","Medium","Verified",90,2,"Moderate","Dense fog reported affecting flight operations at Srinagar airport.",-11],
+    ["Citizen","Meera Nair","Kochi","Flooding","Critical","Needs Review",63,31,"Low","Report mentions flooding but photo evidence appears unrelated to location tag.",-1],
+    ["Social Media","@DelhiDustAlert","Delhi","Dust Storm","Medium","Under Review",71,14,"Moderate","Reduced visibility and dust reported around NCR outskirts.",-5],
+    ["IMD API","IMD Automated Feed","Guwahati","Heavy Rainfall","High","Verified",95,3,"High","Brahmaputra basin rainfall alert issued for Guwahati and adjoining districts.",-8],
+    ["Citizen","Karthik Iyer","Bengaluru","Strong Winds","Medium","Submitted",68,5,"Low","Strong winds uprooted a tree near Indiranagar, minor traffic disruption.",-1],
+    ["Public Dataset","AWS Sensor Network","Bhopal","Hailstorm","High","Verified",92,2,"Moderate","Automatic weather station recorded hail event lasting approx 12 minutes.",-14],
+    ["Citizen","Farah Sheikh","Kolkata","Flooding","Critical","Needs Review",58,27,"Low","Unverified claim, no coordinates attached, description inconsistent with nearby reports.",-2],
+    ["Social Media","@JaipurWeatherWatch","Jaipur","Dust Storm","Low","Rejected",41,38,"Low","Post later found to be reposting an old 2019 dust storm photo.",-20],
+    ["IMD API","IMD Automated Feed","Patna","Heavy Rainfall","Medium","Verified",93,6,"Moderate","Moderate to heavy rainfall recorded across Patna and Gaya districts.",-7],
+    ["Citizen","Devendra Rathore","Ahmedabad","Heatwave","High","Under Review",74,4,"Moderate","Extreme heat conditions reported, several residents reported heat exhaustion.",-3]
+  ];
+  return rows.map((r,i)=>{
+    const [source,name,city,event,severity,status,trust,dup,cross,desc,hoursAgo] = r;
+    const geo = CITY_GEO[city] || [22.9,79.9,"—"];
+    return {
+      id:"RPT-"+(1000+i+1),
+      source, name, city, state:geo[2], lat:geo[0], lng:geo[1],
+      event, severity, status, trust, duplicate:dup, crossSource:cross,
+      description:desc, landmark:"", media:null, mediaName:"",
+      aiRecommendation: status==="Verified" ? "Consistent with cross-source signals — verification recommended"
+        : status==="Rejected" ? "Low confidence and low cross-source support — recommend rejection"
+        : status==="Needs Review" ? "Conflicting signals detected — requires human verification"
+        : "Awaiting human verification",
+      time:new Date(Date.now()+hoursAgo*3600*1000).toISOString(),
+      mobile:""
+    };
+  });
+}
+
+let state = {
+  role: "citizen",
+  page: "overview",
+  reports: [],
+  alerts: [
+    {id:"ALT-01", severity:"Critical", event:"Flooding", city:"Mumbai, Maharashtra", msg:"Multiple verified and citizen reports indicate significant waterlogging in low-lying areas. Decision-support alert — not an official warning.", time:"18 min ago"},
+    {id:"ALT-02", severity:"High", event:"Heavy Rainfall", city:"Pune, Maharashtra", msg:"IMD feed and citizen reports show sustained heavy rainfall. Monitor local advisories before travel.", time:"41 min ago"},
+    {id:"ALT-03", severity:"High", event:"Heatwave", city:"Jaipur, Rajasthan", msg:"Gridded climate data indicates extreme temperatures across western Rajasthan.", time:"1 hr ago"},
+    {id:"ALT-03b", severity:"Medium", event:"Dust Storm", city:"Delhi NCR", msg:"Social-sourced reports indicate reduced visibility due to dust; cross-source confirmation is moderate.", time:"2 hr ago"}
+  ],
+  map: null,
+  markerLayer: null,
+  selectedMapReport: null
+};
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ state.reports = JSON.parse(raw); }
+    else { state.reports = seedReports(); saveData(); }
+  }catch(e){ state.reports = seedReports(); }
+}
+function saveData(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.reports)); }catch(e){}
+}
+loadData();
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+function esc(v){
+  return String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function severityClass(s){
+  s=(s||"").toLowerCase();
+  if(s==="critical") return "crit";
+  if(s==="high") return "high";
+  if(s==="medium") return "med";
+  return "low";
+}
+function statusClass(s){ return "st-"+String(s).toLowerCase().replace(/\s+/g,""); }
+function timeAgo(iso){
+  const diff = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(diff/3600000);
+  if(h < 1){ const m = Math.max(1,Math.floor(diff/60000)); return m+" min ago"; }
+  if(h < 24) return h+" hr ago";
+  return Math.floor(h/24)+" d ago";
+}
+function toast(msg, kind){
+  const root = $("toastRoot");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `<span class="tic">${kind==="error"?"⚠":"✓"}</span><div>${esc(msg)}</div>`;
+  root.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+function countStatus(s){ return state.reports.filter(r=>r.status===s).length; }
+function countSeverity(s){ return state.reports.filter(r=>r.severity===s).length; }
+function avgTrust(){
+  if(!state.reports.length) return 0;
+  return Math.round(state.reports.reduce((a,r)=>a+r.trust,0)/state.reports.length);
+}
+
+/* =========================================================
+   LANDING → APP
+   ========================================================= */
+$("statTotal").textContent = seedReports().length + "+";
+$("statVerified").textContent = seedReports().filter(r=>r.status==="Verified").length;
+
+function enterApp(role){
+  state.role = role;
+  $("landing").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  go("overview");
+  toast(role==="admin" ? "Government Admin mode activated." : "Citizen mode activated.");
+}
+function exitApp(){
+  $("app").classList.add("hidden");
+  $("landing").classList.remove("hidden");
+}
+function setRole(role){
+  state.role = role;
+  applyRoleUI();
+  go(state.page);
+  toast(role==="admin" ? "Switched to Government Admin." : "Switched to Citizen mode.");
+}
+function switchRole(){ setRole(state.role==="admin" ? "citizen" : "admin"); }
+
+function applyRoleUI(){
+  $("toggleCitizen").classList.toggle("on", state.role==="citizen");
+  $("toggleAdmin").classList.toggle("on", state.role==="admin");
+  $("srbIcon").textContent = state.role==="admin" ? "G" : "U";
+  $("srbTitle").textContent = state.role==="admin" ? "Government Admin" : "Citizen User";
+  $("srbSub").textContent = state.role==="admin" ? "Authorized verification panel" : "Weather reporting portal";
+  const pend = state.reports.filter(r=>r.status==="Needs Review"||r.status==="Under Review"||r.status==="Submitted"||r.status==="AI Analyzed").length;
+  const pc = $("pendingCount");
+  if(state.role==="admin" && pend>0){ pc.style.display="inline-flex"; pc.textContent = pend; }
+  else { pc.style.display="none"; }
+}
+
+function toggleSidebar(){ $("sidebar").classList.toggle("open"); }
+
+/* =========================================================
+   ROUTER
+   ========================================================= */
+function go(page){
+  state.page = page;
+  applyRoleUI();
+  document.querySelectorAll(".nav-item[data-page]").forEach(b=>b.classList.toggle("on", b.dataset.page===page));
+  $("sidebar").classList.remove("open");
+  const main = $("main");
+  const renderers = {
+    overview: pageOverview, map: pageMap, reports: pageReports,
+    investigation: pageInvestigation, ai: pageAI, analytics: pageAnalytics,
+    submit: pageSubmit, myreports: pageMyReports, alerts: pageAlerts,
+    sources: pageSources, status: pageStatus
+  };
+  main.innerHTML = (renderers[page] || pageOverview)();
+  window.scrollTo({top:0,behavior:"smooth"});
+
+  if(page==="overview") setTimeout(drawOverviewCharts, 40);
+  if(page==="analytics") setTimeout(drawAnalyticsCharts, 40);
+  if(page==="map") setTimeout(()=>initMap(), 40);
+  if(page==="submit") setTimeout(bindSubmitForm, 40);
+  if(page==="ai") setTimeout(bindAIDemo, 40);
+}
+
+/* =========================================================
+   SHARED: REPORT TABLE
+   ========================================================= */
+function reportTable(rows, opts){
+  opts = opts || {};
+  if(!rows.length){
+    return `<div class="empty-state"><div class="ee">🌤️</div>No reports match the current filters.</div>`;
+  }
+  return `
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>ID</th><th>Location</th><th>Event</th><th>Source</th><th>Severity</th>
+      <th>AI Trust</th><th>Status</th><th>Reported</th><th></th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r=>`
+        <tr>
+          <td><b>${esc(r.id)}</b></td>
+          <td><b>${esc(r.city)}</b><br><span style="color:var(--muted);font-size:10.5px">${esc(r.state)}</span></td>
+          <td>${esc(r.event)}</td>
+          <td><span class="src-tag">${esc(r.source)}</span></td>
+          <td><span class="badge ${severityClass(r.severity)}">${esc(r.severity)}</span></td>
+          <td><div class="trust-bar"><div class="track"><div class="fill" style="width:${r.trust}%"></div></div><b>${r.trust}%</b></div></td>
+          <td><span class="badge ${statusClass(r.status)}">${esc(r.status)}</span></td>
+          <td style="color:var(--muted)">${timeAgo(r.time)}</td>
+          <td><button class="row-btn" onclick="inspect('${r.id}')">Inspect</button></td>
+        </tr>
+      `).join("")}
+    </tbody>
+  </table></div>`;
+}
+
+/* =========================================================
+   PAGE: OVERVIEW
+   ========================================================= */
+function pageOverview(){
+  const total = state.reports.length;
+  const verified = countStatus("Verified");
+  const pending = total - verified - countStatus("Rejected");
+  const critical = countSeverity("Critical");
+  return `
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">NATIONAL OVERVIEW</div>
+      <h1>Weather Intelligence Dashboard</h1>
+      <p>Multi-source ingestion, AI-assisted analysis and human verification — summarized for decision support.</p>
+    </div>
+    <span class="pill green"><span class="dot"></span>System Online — Demo Data</span>
+  </div>
+
+  <div class="grid g-cols-5" style="margin-bottom:18px">
+    <div class="kpi" style="--kpi-accent:var(--navy-800)"><div class="kpi-top"><span class="kpi-label">TOTAL REPORTS</span><span class="kpi-icon">📡</span></div><div class="kpi-val">${total}</div><div class="kpi-note">All connected sources</div></div>
+    <div class="kpi" style="--kpi-accent:#166534"><div class="kpi-top"><span class="kpi-label">VERIFIED EVENTS</span><span class="kpi-icon">✅</span></div><div class="kpi-val">${verified}</div><div class="kpi-note">Human-in-the-loop verified</div></div>
+    <div class="kpi" style="--kpi-accent:#155e9a"><div class="kpi-top"><span class="kpi-label">IN PIPELINE</span><span class="kpi-icon">⏳</span></div><div class="kpi-val">${pending}</div><div class="kpi-note">Awaiting review or AI pass</div></div>
+    <div class="kpi" style="--kpi-accent:#9f2626"><div class="kpi-top"><span class="kpi-label">CRITICAL SEVERITY</span><span class="kpi-icon">🚨</span></div><div class="kpi-val">${critical}</div><div class="kpi-note">Priority situations</div></div>
+    <div class="kpi" style="--kpi-accent:var(--gold-600)"><div class="kpi-top"><span class="kpi-label">AVG. AI TRUST</span><span class="kpi-icon">✦</span></div><div class="kpi-val">${avgTrust()}%</div><div class="kpi-note">Indicative, not absolute</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="section-head"><div><h2>Weather Intelligence Pipeline</h2><p>How a single observation becomes verified national intelligence</p></div></div>
+    <div class="flow">
+      ${flowStep(1,"COLLECT","IMD · APIs · Web · Social · Citizens")}${flowArrow()}
+      ${flowStep(2,"PROCESS","Clean, geotag, normalize metadata")}${flowArrow()}
+      ${flowStep(3,"ANALYZE","NLP classification · duplicate check")}${flowArrow()}
+      ${flowStep(4,"CORRELATE","Compare across independent sources")}${flowArrow()}
+      ${flowStep(5,"VERIFY","Government / IMD human review")}${flowArrow()}
+      ${flowStep(6,"VISUALIZE","GIS map · analytics · alerts")}
+    </div>
+  </div>
+
+  <div class="grid g-cols-2" style="margin-bottom:18px">
+    <div class="card"><div class="section-head"><div><h2>Event Distribution</h2><p>Current prototype dataset</p></div></div><canvas id="ovEventChart" height="200"></canvas></div>
+    <div class="card"><div class="section-head"><div><h2>Verification Status</h2><p>Report lifecycle breakdown</p></div></div><canvas id="ovStatusChart" height="200"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <div><h2>Latest Intelligence</h2><p>Most recent reports across all sources</p></div>
+      <button class="linklike" onclick="go('reports')">View all →</button>
+    </div>
+    ${reportTable(state.reports.slice(0,6))}
+  </div>`;
+}
+function flowStep(n,title,sub){ return `<div class="flow-step"><div class="fnum">${n}</div><b>${title}</b><span>${sub}</span></div>`; }
+function flowArrow(){ return `<div class="flow-arrow">→</div>`; }
+
+let ovCharts = {};
+function drawOverviewCharts(){
+  if(typeof Chart==="undefined") return;
+  const evCounts = {};
+  state.reports.forEach(r=>evCounts[r.event]=(evCounts[r.event]||0)+1);
+  const stCounts = {Verified:countStatus("Verified"),"Under Review":countStatus("Under Review"),"AI Analyzed":countStatus("AI Analyzed"),Submitted:countStatus("Submitted"),"Needs Review":countStatus("Needs Review"),Rejected:countStatus("Rejected")};
+  Object.keys(stCounts).forEach(k=>{ if(!stCounts[k]) delete stCounts[k]; });
+
+  chartMake("ovEventChart","bar",Object.keys(evCounts),Object.values(evCounts),["#123a5e"]);
+  chartMake("ovStatusChart","doughnut",Object.keys(stCounts),Object.values(stCounts),
+    ["#166534","#155e9a","#5b8fb5","#9aa9b7","#95590a","#9f2626"]);
+}
+function chartMake(id,type,labels,values,colors){
+  const c = $(id); if(!c) return;
+  if(c._chart) c._chart.destroy();
+  c._chart = new Chart(c,{
+    type, data:{labels, datasets:[{label:"Reports", data:values, backgroundColor: type==="bar"?colors[0]:colors, borderRadius: type==="bar"?7:0, borderWidth: type==="bar"?0:2, borderColor:"#fff"}]},
+    options:{responsive:true, maintainAspectRatio:true,
+      plugins:{legend:{display: type!=="bar", position:"bottom", labels:{boxWidth:10,font:{size:10.5}}}},
+      scales: type==="bar" ? {y:{beginAtZero:true, ticks:{precision:0}}} : {}
+    }
+  });
+}
+
+/* =========================================================
+   PAGE: LIVE MAP (real India map via Leaflet + OSM)
+   ========================================================= */
+function pageMap(){
+  return `
+  <div class="page-head">
+    <div><div class="eyebrow">GIS INTELLIGENCE LAYER</div><h1>Live Weather Map — India</h1><p>Real geographic map with state boundaries. Markers represent multi-source weather reports; click any marker for details.</p></div>
+    <span class="pill blue">📍 ${state.reports.length} active markers</span>
+  </div>
+  <div class="map-toolbar">
+    <button class="chip on" data-f="all" onclick="filterMap('all',this)">All Events</button>
+    <button class="chip" data-f="Critical" onclick="filterMap('Critical',this)">Critical</button>
+    <button class="chip" data-f="High" onclick="filterMap('High',this)">High</button>
+    <button class="chip" data-f="Medium" onclick="filterMap('Medium',this)">Medium</button>
+    <button class="chip" data-f="Verified" onclick="filterMap('Verified',this)">Verified only</button>
+  </div>
+  <div class="map-layout">
+    <div>
+      <div id="leafletMap"></div>
+      <div class="map-legend-bar">
+        <span><i style="background:#9f2626"></i>Critical</span>
+        <span><i style="background:#c9701c"></i>High</span>
+        <span><i style="background:#155e9a"></i>Medium</span>
+        <span><i style="background:#166534"></i>Low / Verified</span>
+      </div>
+    </div>
+    <div class="map-side" id="mapSide">
+      <h3>India Weather Situation</h3>
+      <div class="info-row"><div class="il">ACTIVE REPORTS</div><div class="iv">${state.reports.length}</div></div>
+      <div class="info-row"><div class="il">HIGH / CRITICAL</div><div class="iv">${countSeverity("High")+countSeverity("Critical")}</div></div>
+      <div class="info-row"><div class="il">VERIFIED</div><div class="iv">${countStatus("Verified")}</div></div>
+      <div class="info-row"><div class="il">AVERAGE AI TRUST</div><div class="iv">${avgTrust()}%</div></div>
+      <div class="note-box blue" style="margin-top:14px">Click a marker on the map, or a city, to inspect the associated weather report and its AI-assisted analysis.</div>
+    </div>
+  </div>`;
+}
+
+let mapInitAttempts = 0;
+function initMap(){
+  const el = $("leafletMap");
+  if(!el) return;
+
+  // Leaflet may not have finished loading from the CDN yet — retry briefly instead of giving up.
+  if(typeof L === "undefined"){
+    mapInitAttempts++;
+    if(mapInitAttempts < 25){ setTimeout(initMap, 200); return; }
+    el.innerHTML = mapFallbackHTML("The map library couldn't load from the CDN. Check your internet connection, or that your browser/ad-blocker isn't blocking cdnjs.cloudflare.com.");
+    return;
+  }
+  mapInitAttempts = 0;
+
+  if(state.map){ state.map.remove(); state.map=null; }
+  el.innerHTML = "";
+
+  state.map = L.map("leafletMap", { scrollWheelZoom:true, minZoom:4, maxZoom:12 })
+    .setView([22.9,80.5], 4.6);
+
+  let tilesFailed = 0;
+  const tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution:'&copy; OpenStreetMap contributors',
+    maxZoom:18, subdomains:"abc"
+  });
+  tileLayer.on("tileerror", ()=>{
+    tilesFailed++;
+    if(tilesFailed === 6){
+      toast("Map tiles are slow to load or blocked on this network — the marker data is still live.","error");
+    }
+  });
+  tileLayer.addTo(state.map);
+
+  state.markerLayer = L.layerGroup().addTo(state.map);
+  renderMapMarkers("all");
+
+  // Fix the classic Leaflet "blank grey map" bug: the container can be measured
+  // at 0×0 on the very first render before layout settles, so force a resize check.
+  setTimeout(()=>{ if(state.map) state.map.invalidateSize(); }, 120);
+  setTimeout(()=>{ if(state.map) state.map.invalidateSize(); }, 500);
+  window.addEventListener("resize", ()=>{ if(state.map) state.map.invalidateSize(); });
+}
+function mapFallbackHTML(msg){
+  return `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--surface-2);border-radius:var(--radius);padding:20px;text-align:center">
+    <div style="font-size:26px">🗺️</div>
+    <b style="font-size:13px;color:var(--navy-900)">Map couldn't load</b>
+    <span style="font-size:11.5px;color:var(--muted);max-width:38ch">${esc(msg)}</span>
+    <button class="row-btn" onclick="go('map')" style="margin-top:6px">Retry</button>
+  </div>`;
+}
+
+const SEV_COLOR = { Critical:"#9f2626", High:"#c9701c", Medium:"#155e9a", Low:"#166534" };
+
+function renderMapMarkers(filter){
+  if(!state.markerLayer) return;
+  state.markerLayer.clearLayers();
+
+  let rows = state.reports;
+  if(filter==="Verified") rows = rows.filter(r=>r.status==="Verified");
+  else if(filter!=="all") rows = rows.filter(r=>r.severity===filter);
+
+  rows.forEach(r=>{
+    const color = SEV_COLOR[r.severity] || "#155e9a";
+    const marker = L.circleMarker([r.lat, r.lng], {
+      radius: r.severity==="Critical"?10:r.severity==="High"?8.5:7,
+      color:"#fff", weight:2, fillColor: color, fillOpacity:.92
+    });
+    marker.bindPopup(`
+      <b>${esc(r.city)}, ${esc(r.state)}</b><br>
+      ${esc(r.event)} · ${esc(r.severity)}<br>
+      Status: ${esc(r.status)} · Trust: ${r.trust}%<br>
+      <a href="#" onclick="inspect('${r.id}');return false;">Open full report →</a>
+    `);
+    marker.on("click", ()=>showMapSide(r));
+    marker.addTo(state.markerLayer);
+  });
+}
+
+function filterMap(f, btn){
+  document.querySelectorAll(".map-toolbar .chip").forEach(c=>c.classList.remove("on"));
+  if(btn) btn.classList.add("on");
+  renderMapMarkers(f);
+}
+
+function showMapSide(r){
+  const box = $("mapSide");
+  if(!box) return;
+  box.innerHTML = `
+    <h3>${esc(r.city)} — ${esc(r.event)}</h3>
+    <div class="info-row"><div class="il">SEVERITY</div><div class="iv"><span class="badge ${severityClass(r.severity)}">${esc(r.severity)}</span></div></div>
+    <div class="info-row"><div class="il">SOURCE</div><div class="iv">${esc(r.source)}</div></div>
+    <div class="info-row"><div class="il">AI TRUST SIGNAL</div><div class="iv">${r.trust}%</div></div>
+    <div class="info-row"><div class="il">STATUS</div><div class="iv"><span class="badge ${statusClass(r.status)}">${esc(r.status)}</span></div></div>
+    <div class="note-box blue" style="margin-top:12px">${esc(r.description)}</div>
+    <button class="row-btn" style="margin-top:12px;width:100%" onclick="inspect('${r.id}')">Open Full Report</button>
+  `;
+}
+
+/* =========================================================
+   PAGE: INCOMING REPORTS
+   ========================================================= */
+function pageReports(){
+  return `
+  <div class="page-head">
+    <div><div class="eyebrow">MULTI-SOURCE FEED</div><h1>Incoming Weather Reports</h1><p>Unified feed from IMD, public datasets, social/web sources and citizen submissions.</p></div>
+    <button class="linklike" onclick="go('submit')">+ Submit citizen report</button>
+  </div>
+  <div class="card">
+    <div class="filter-bar">
+      <input id="fSearch" placeholder="Search city, event, ID, description…" oninput="refreshReportsTable()">
+      <select id="fSeverity" onchange="refreshReportsTable()"><option value="all">All Severity</option>${["Critical","High","Medium","Low"].map(s=>`<option>${s}</option>`).join("")}</select>
+      <select id="fStatus" onchange="refreshReportsTable()"><option value="all">All Status</option>${STATUS_FLOW.map(s=>`<option>${s}</option>`).join("")}</select>
+      <select id="fSource" onchange="refreshReportsTable()"><option value="all">All Sources</option>${SOURCES.map(s=>`<option>${s}</option>`).join("")}</select>
+    </div>
+    <div id="reportsTableArea">${reportTable(state.reports)}</div>
+  </div>`;
+}
+function refreshReportsTable(){
+  const q = ($("fSearch")?.value||"").toLowerCase();
+  const sev = $("fSeverity")?.value||"all";
+  const stat = $("fStatus")?.value||"all";
+  const src = $("fSource")?.value||"all";
+  const rows = state.reports.filter(r=>{
+    const text = (r.id+" "+r.city+" "+r.state+" "+r.event+" "+r.description).toLowerCase();
+    return text.includes(q) && (sev==="all"||r.severity===sev) && (stat==="all"||r.status===stat) && (src==="all"||r.source===src);
+  });
+  $("reportsTableArea").innerHTML = reportTable(rows);
+}
+
+/* =========================================================
+   PAGE: INVESTIGATION
+   ========================================================= */
+function pageInvestigation(){
+  const queue = state.reports.filter(r=>["Submitted","AI Analyzed","Under Review","Needs Review"].includes(r.status));
+  return `
+  <div class="page-head">
+    <div><div class="eyebrow">HUMAN-IN-THE-LOOP</div><h1>Investigation &amp; Verification Queue</h1><p>AI provides trust, duplicate and cross-source signals. Final verification always rests with an authorized Government/IMD reviewer.</p></div>
+    <span class="pill gold">${queue.length} items require attention</span>
+  </div>
+  ${state.role!=="admin" ? `<div class="note-box blue">You're viewing this queue as a Citizen user. Switch to <b>Government Admin</b> to verify, reject or flag reports for review.</div>` : ""}
+  <div class="card">
+    <div class="section-head"><div><h2>Reports Awaiting Review</h2><p>Sorted by most recent submission</p></div></div>
+    ${reportTable(queue)}
+  </div>`;
+}
+
+/* =========================================================
+   PAGE: AI ANALYSIS
+   ========================================================= */
+function pageAI(){
+  return `
+  <div class="page-head">
+    <div><div class="eyebrow">DECISION SUPPORT, NOT FINAL AUTHORITY</div><h1>AI-Assisted Analysis</h1><p>Lightweight NLP heuristics running live in this prototype — classification, duplicate detection and cross-source correlation. Final verification always remains with a human reviewer.</p></div>
+  </div>
+
+  <div class="grid g-cols-3" style="margin-bottom:18px">
+    ${aiCard("✦","Text &amp; Event Classification","Scans report descriptions for weather-related keywords to suggest the most likely event category.","Runs live in this demo")}
+    ${aiCard("⧉","Duplicate Detection","Compares new reports against existing ones by location, event and description overlap to flag likely duplicates.","Similarity scoring")}
+    ${aiCard("⇄","Cross-Source Correlation","Checks whether other independent sources (IMD, social, web) report the same event near the same city.","Evidence fusion")}
+    ${aiCard("◎","Confidence Scoring","Combines source reliability, duplicate signal and cross-source agreement into one indicative trust score.","Not an absolute truth score")}
+    ${aiCard("▣","Image / Video Evidence","Uploaded media is attached to the report for human reviewers — conceptually, computer vision would assist classification here.","Prototype / conceptual")}
+    ${aiCard("🌐","Multilingual Understanding","Designed to extend to Indic-language citizen reports so regional-language posts are not missed.","Roadmap capability")}
+  </div>
+
+  <div class="ai-demo">
+    <div class="section-head"><div><h2>Try the live classifier</h2><p>Paste or write a short weather observation — the same heuristic used when a citizen submits a report.</p></div></div>
+    <label style="font-size:11.5px;font-weight:700;color:var(--text-soft)">Sample report text</label>
+    <textarea id="aiDemoInput" placeholder="e.g. Very heavy rain near Katraj, roads are flooded and traffic is moving very slowly.">Heavy rain and strong wind reported near the railway station, some waterlogging on the main road.</textarea>
+    <button class="submit-btn" onclick="runAIDemo()">Run AI-assisted analysis</button>
+    <div class="ai-result" id="aiDemoResult"></div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="section-head"><div><h2>Responsible AI principle</h2></div></div>
+    <div class="note-box blue">AI output here is a decision-support <b>signal</b>, not a verdict. Every recommendation is labelled "AI-assisted" or "requires human verification" — CODEMATE never auto-publishes a report as confirmed weather intelligence without a Government/IMD reviewer's action.</div>
+  </div>`;
+}
+function aiCard(icon,title,text,tag){
+  return `<div class="ai-card"><div class="aic-icon">${icon}</div><h3>${title}</h3><p>${text}</p><span class="tagline">${tag}</span></div>`;
+}
+
+function classifyText(desc){
+  const t = desc.toLowerCase();
+  let best = null, bestScore = 0;
+  Object.entries(KEYWORD_MAP).forEach(([event,words])=>{
+    let score = 0;
+    words.forEach(w=>{ if(t.includes(w)) score++; });
+    if(score > bestScore){ bestScore = score; best = event; }
+  });
+  return { event: best, hits: bestScore };
+}
+
+function jaccardSim(a,b){
+  const sa = new Set(a.toLowerCase().split(/\W+/).filter(w=>w.length>3));
+  const sb = new Set(b.toLowerCase().split(/\W+/).filter(w=>w.length>3));
+  if(!sa.size || !sb.size) return 0;
+  let inter = 0;
+  sa.forEach(w=>{ if(sb.has(w)) inter++; });
+  const union = new Set([...sa,...sb]).size;
+  return union ? inter/union : 0;
+}
+
+function runAIDemo(){
+  const text = $("aiDemoInput").value.trim();
+  if(!text){ toast("Enter some report text first.","error"); return; }
+  const cls = classifyText(text);
+  const confidence = Math.min(97, 55 + cls.hits*13 + Math.round(Math.random()*6));
+  let bestDup = {score:0, id:null};
+  state.reports.forEach(r=>{
+    const sim = jaccardSim(text, r.description);
+    if(sim > bestDup.score){ bestDup = {score:sim, id:r.id}; }
+  });
+  const dupPct = Math.round(bestDup.score*100);
+  const box = $("aiDemoResult");
+  box.classList.add("show");
+  box.innerHTML = `
+    <div class="ar-row"><span>Detected event category</span><b>${cls.event || "Unclassified — needs manual review"}</b></div>
+    <div class="ar-row"><span>Keyword matches found</span><b>${cls.hits}</b></div>
+    <div class="ar-row"><span>AI confidence</span><b>${cls.hits ? confidence+"%" : "Low"}</b></div>
+    <div class="ar-row"><span>Closest existing report</span><b>${dupPct>28 ? bestDup.id+" ("+dupPct+"% text overlap)" : "No close match found"}</b></div>
+    <div class="ar-row"><span>AI recommendation</span><b>${cls.hits && dupPct<55 ? "Plausible new observation — recommend human verification" : dupPct>=55 ? "Possible duplicate — cross-check with "+bestDup.id : "Insufficient signal — requires manual classification"}</b></div>
+  `;
+}
+function bindAIDemo(){ /* no-op, button uses inline handler */ }
+
+/* =========================================================
+   PAGE: ANALYTICS
+   ========================================================= */
+function pageAnalytics(){
+  return `
+  <div class="page-head"><div><div class="eyebrow">DATA VISUALIZATION</div><h1>Weather Analytics</h1><p>Interactive summary of the current dataset — filters on the Reports page feed directly into this dataset.</p></div></div>
+  <div class="grid g-cols-2" style="margin-bottom:16px">
+    <div class="card"><h2 style="font-size:15px;margin-bottom:3px">Events by Category</h2><p style="font-size:11.7px;color:var(--muted);margin:0 0 10px">Classified weather event distribution</p><canvas id="anEventChart" height="210"></canvas></div>
+    <div class="card"><h2 style="font-size:15px;margin-bottom:3px">Severity Distribution</h2><p style="font-size:11.7px;color:var(--muted);margin:0 0 10px">Operational priority breakdown</p><canvas id="anSevChart" height="210"></canvas></div>
+  </div>
+  <div class="grid g-cols-2" style="margin-bottom:16px">
+    <div class="card"><h2 style="font-size:15px;margin-bottom:3px">Source Contribution</h2><p style="font-size:11.7px;color:var(--muted);margin:0 0 10px">Where reports originate from</p><canvas id="anSourceChart" height="210"></canvas></div>
+    <div class="card"><h2 style="font-size:15px;margin-bottom:3px">Reports by State</h2><p style="font-size:11.7px;color:var(--muted);margin:0 0 10px">Top reporting states in current dataset</p><canvas id="anStateChart" height="210"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="section-head"><div><h2>Key Operational Indicators</h2></div></div>
+    <div class="grid g-cols-5">
+      <div class="kpi" style="--kpi-accent:var(--navy-800)"><div class="kpi-label">TOTAL REPORTS</div><div class="kpi-val">${state.reports.length}</div></div>
+      <div class="kpi" style="--kpi-accent:var(--gold-600)"><div class="kpi-label">AVG TRUST</div><div class="kpi-val">${avgTrust()}%</div></div>
+      <div class="kpi" style="--kpi-accent:#166534"><div class="kpi-label">VERIFIED</div><div class="kpi-val">${countStatus("Verified")}</div></div>
+      <div class="kpi" style="--kpi-accent:#95590a"><div class="kpi-label">NEEDS REVIEW</div><div class="kpi-val">${countStatus("Needs Review")}</div></div>
+      <div class="kpi" style="--kpi-accent:#9f2626"><div class="kpi-label">CRITICAL</div><div class="kpi-val">${countSeverity("Critical")}</div></div>
+    </div>
+  </div>`;
+}
+function drawAnalyticsCharts(){
+  if(typeof Chart==="undefined") return;
+  const evCounts={}; state.reports.forEach(r=>evCounts[r.event]=(evCounts[r.event]||0)+1);
+  chartMake("anEventChart","bar",Object.keys(evCounts),Object.values(evCounts),["#123a5e"]);
+
+  const sevCounts={Critical:countSeverity("Critical"),High:countSeverity("High"),Medium:countSeverity("Medium"),Low:countSeverity("Low")};
+  chartMake("anSevChart","doughnut",Object.keys(sevCounts),Object.values(sevCounts),["#9f2626","#c9701c","#155e9a","#166534"]);
+
+  const srcCounts={}; state.reports.forEach(r=>srcCounts[r.source]=(srcCounts[r.source]||0)+1);
+  chartMake("anSourceChart","bar",Object.keys(srcCounts),Object.values(srcCounts),["#a97e22"]);
+
+  const stateCounts={}; state.reports.forEach(r=>stateCounts[r.state]=(stateCounts[r.state]||0)+1);
+  const top = Object.entries(stateCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  chartMake("anStateChart","bar",top.map(x=>x[0]),top.map(x=>x[1]),["#1c4d78"]);
+}
+
+/* =========================================================
+   PAGE: SUBMIT (CITIZEN REPORT)
+   ========================================================= */
+function pageSubmit(){
+  return `
+  <div class="page-head"><div><div class="eyebrow">CITIZEN INPUT</div><h1>Report a Weather Event</h1><p>Your observation feeds directly into the multi-source intelligence pipeline for AI-assisted analysis and verification.</p></div></div>
+  <div class="note-box">In a production deployment this form would use authenticated submission and secure server-side storage. This prototype stores your report in your browser only.</div>
+  <div class="card form-wrap">
+    <form id="reportForm">
+      <div class="f-grid">
+        <div class="field"><label>Your name</label><input name="name" required placeholder="Enter your name"></div>
+        <div class="field"><label>Mobile number <span class="hint">(optional)</span></label><input name="mobile" maxlength="10" placeholder="10-digit mobile number"></div>
+        <div class="field"><label>City</label>
+          <select name="city" required id="citySelect"><option value="">Select city</option>${CITY_LIST.map(c=>`<option>${c}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label>State</label><input name="state" id="stateAuto" placeholder="Auto-filled from city" readonly></div>
+        <div class="field"><label>Weather event</label>
+          <select name="event" required><option value="">Select event</option>${EVENTS.map(e=>`<option>${e}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label>Severity</label>
+          <select name="severity" required><option value="">Select severity</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+        </div>
+        <div class="field"><label>Date &amp; time</label><input type="datetime-local" name="datetime" required></div>
+        <div class="field"><label>Location / landmark <span class="hint">(optional)</span></label><input name="landmark" placeholder="e.g. near railway station"></div>
+      </div>
+      <div class="f-grid full-w" style="margin-top:14px">
+        <div class="field"><label>Description</label><textarea name="description" required placeholder="Describe exactly what you observed — this text is analyzed by CODEMATE's AI classifier."></textarea></div>
+      </div>
+      <div class="upload-row" style="margin-top:14px">
+        <div class="upload-box">
+          <b>📷 Photo evidence</b><span>Optional, under 4 MB, stored locally in this browser</span><br>
+          <input type="file" id="photoInput" accept="image/*">
+          <div id="photoChip"></div>
+        </div>
+        <div class="upload-box">
+          <b>🎥 Video evidence</b><span>Optional — a filename reference is stored in this demo</span><br>
+          <input type="file" id="videoInput" accept="video/*">
+          <div id="videoChip"></div>
+        </div>
+      </div>
+      <button class="submit-btn" type="submit">📡 Submit Weather Report</button>
+    </form>
+  </div>`;
+}
+function bindSubmitForm(){
+  const citySelect = $("citySelect");
+  if(citySelect){
+    citySelect.addEventListener("change", ()=>{
+      const geo = CITY_GEO[citySelect.value];
+      $("stateAuto").value = geo ? geo[2] : "";
+    });
+  }
+  const photoInput = $("photoInput");
+  if(photoInput){
+    photoInput.addEventListener("change", ()=>{
+      const f = photoInput.files[0];
+      $("photoChip").innerHTML = f ? `<span class="file-chip">✓ ${esc(f.name)} (${Math.round(f.size/1024)} KB)</span>` : "";
+    });
+  }
+  const videoInput = $("videoInput");
+  if(videoInput){
+    videoInput.addEventListener("change", ()=>{
+      const f = videoInput.files[0];
+      $("videoChip").innerHTML = f ? `<span class="file-chip">✓ ${esc(f.name)} (${Math.round(f.size/1024)} KB)</span>` : "";
+    });
+  }
+  const form = $("reportForm");
+  if(form){
+    form.addEventListener("submit", e=>{
+      e.preventDefault();
+      submitCitizenReport(form);
+    });
+  }
+}
+
+function submitCitizenReport(form){
+  const data = new FormData(form);
+  const city = data.get("city");
+  const geo = CITY_GEO[city] || [22.9,79.9,data.get("state")||"—"];
+  const description = (data.get("description")||"").trim();
+
+  const cls = classifyText(description);
+  let bestDup = {score:0,id:null};
+  state.reports.forEach(r=>{
+    if(r.city!==city) return;
+    const sim = jaccardSim(description, r.description);
+    if(sim>bestDup.score) bestDup = {score:sim, id:r.id};
+  });
+  const crossMatch = state.reports.some(r=>r.city===city && r.event===data.get("event") && r.source!=="Citizen");
+  const dupPct = Math.round(bestDup.score*100);
+  const trust = Math.max(45, Math.min(96, 58 + cls.hits*10 - dupPct*0.2 + Math.round(Math.random()*8)));
+
+  const report = {
+    id: "CIT-"+Date.now().toString().slice(-6),
+    source: "Citizen",
+    name: data.get("name")||"Anonymous Citizen",
+    mobile: data.get("mobile")||"",
+    city, state: geo[2], lat: geo[0], lng: geo[1],
+    event: data.get("event"),
+    severity: data.get("severity"),
+    status: dupPct>=55 ? "Needs Review" : "AI Analyzed",
+    trust: Math.round(trust),
+    duplicate: dupPct,
+    crossSource: crossMatch ? "Moderate" : "Low",
+    description,
+    landmark: data.get("landmark")||"",
+    media: null, mediaName: "",
+    aiRecommendation: dupPct>=55
+      ? "Possible duplicate of "+bestDup.id+" — requires human verification"
+      : crossMatch
+        ? "Consistent with another independent source — recommend verification"
+        : "Single-source observation — requires human verification",
+    time: new Date().toISOString()
+  };
+
+  const photo = $("photoInput")?.files?.[0];
+  const finish = ()=>{
+    state.reports.unshift(report);
+    saveData();
+    toast("Report "+report.id+" submitted — AI analysis complete.");
+    go("myreports");
+  };
+
+  if(photo && photo.size <= 4*1024*1024){
+    const reader = new FileReader();
+    reader.onload = ()=>{ report.media = reader.result; report.mediaName = photo.name; finish(); };
+    reader.onerror = finish;
+    reader.readAsDataURL(photo);
+  } else {
+    if(photo) toast("Photo skipped — file exceeds 4 MB demo limit.","error");
+    finish();
+  }
+}
+
+/* =========================================================
+   PAGE: MY REPORTS
+   ========================================================= */
+function pageMyReports(){
+  const mine = state.reports.filter(r=>r.source==="Citizen");
+  return `
+  <div class="page-head"><div><div class="eyebrow">CITIZEN PORTAL</div><h1>My Reports</h1><p>Track the reports you've submitted in this browser session and their verification status.</p></div></div>
+  <div class="card">
+    ${mine.length ? reportTable(mine) : `<div class="empty-state"><div class="ee">📋</div>You haven't submitted any reports yet in this browser.<br><button class="linklike" style="margin-top:12px" onclick="go('submit')">Report a weather event →</button></div>`}
+  </div>`;
+}
+
+/* =========================================================
+   PAGE: ALERTS & ASSISTANCE
+   ========================================================= */
+function pageAlerts(){
+  return `
+  <div class="page-head"><div><div class="eyebrow">DECISION SUPPORT</div><h1>Alerts &amp; Emergency Assistance</h1><p>Prototype decision-support alerts generated from verified and cross-referenced reports — not an official government warning system.</p></div></div>
+  <div class="grid g-cols-2" style="align-items:start">
+    <div>
+      <div class="section-head"><div><h2>Active Decision-Support Alerts</h2></div></div>
+      ${state.alerts.map(a=>`
+        <div class="alert-item">
+          <div class="al-sev ${severityClass(a.severity)}"></div>
+          <div>
+            <h4>${esc(a.event)} — ${esc(a.city)}</h4>
+            <p>${esc(a.msg)}</p>
+            <div class="al-meta"><span class="badge ${severityClass(a.severity)}">${esc(a.severity)}</span> · ${esc(a.time)} · Prototype alert</div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+    <div>
+      <div class="emergency-card">
+        <h2>Need immediate help?</h2>
+        <p>If you are in immediate danger from a weather emergency, contact emergency services directly. CODEMATE is an information and decision-support layer — it does not dispatch responders.</p>
+        <div class="em-btns">
+          <a href="tel:112">📞 National Emergency — 112</a>
+          <a href="tel:1078" class="alt">🌪️ Disaster Mgmt — 1078</a>
+        </div>
+        <div class="em-disclaimer">Numbers shown are India's publicly known national emergency helplines, provided for quick access only.</div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="section-head"><div><h2>Safety guidance</h2></div></div>
+        <ul style="font-size:12.3px;color:var(--text-soft);line-height:1.8;padding-left:18px;margin:0">
+          <li>Avoid walking or driving through flooded or waterlogged roads.</li>
+          <li>During thunderstorms, stay indoors and away from open fields or tall isolated trees.</li>
+          <li>During a heatwave, stay hydrated and avoid peak-heat outdoor activity.</li>
+          <li>Follow official IMD and state disaster management advisories over social media claims.</li>
+        </ul>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   PAGE: DATA SOURCES
+   ========================================================= */
+function pageSources(){
+  const items = [
+    ["🛰️","IMD API / WIS2 Ecosystem","Official meteorological feeds and the WMO WIS2 information-sharing ecosystem.","DEMO / SAMPLE DATA","info"],
+    ["📊","Public Weather Datasets","Open government and research datasets (climate grids, AWS sensor networks).","DEMO / SAMPLE DATA","info"],
+    ["📱","Social Media (#IMD &amp; weather hashtags)","Posts tagged with weather hashtags, parsed for location, event and media.","DEMO / SAMPLE DATA","warn"],
+    ["🌐","Websites &amp; Web Sources","Public weather portals and news sources scanned for relevant reports.","DEMO / SAMPLE DATA","info"],
+    ["🧑‍🤝‍🧑","Citizen Reports","Structured submissions from the public via this platform's reporting form.","LIVE — this browser session","green"]
+  ];
+  return `
+  <div class="page-head"><div><div class="eyebrow">MULTI-SOURCE INGESTION</div><h1>Data Sources</h1><p>CODEMATE is designed to fuse five categories of weather information into one pipeline. This prototype clearly separates live citizen input from sample/demo data.</p></div></div>
+  <div class="grid g-cols-2">
+    ${items.map(it=>`
+      <div class="source-card">
+        <div class="sc-icon">${it[0]}</div>
+        <div>
+          <h4>${it[1]}</h4>
+          <p>${it[2]}</p>
+          <span class="pill ${it[4]}">${it[3]}</span>
+        </div>
+      </div>
+    `).join("")}
+  </div>
+  <div class="card" style="margin-top:18px">
+    <div class="section-head"><div><h2>Proposed Technology Stack</h2><p>For a production national deployment</p></div></div>
+    <div class="grid g-cols-4">
+      ${techItem("Ingestion","Kafka / streaming connectors")}
+      ${techItem("Processing","Apache Spark / stream + batch")}
+      ${techItem("Storage","PostgreSQL + PostGIS, object storage")}
+      ${techItem("Search","OpenSearch")}
+      ${techItem("AI / ML","NLP classification, CV, dedup models")}
+      ${techItem("GIS","Leaflet / Mapbox / PostGIS tiles")}
+      ${techItem("API layer","FastAPI, REST + WebSocket for real time")}
+      ${techItem("Deployment","Docker, Kubernetes, autoscaling")}
+    </div>
+  </div>`;
+}
+function techItem(title,sub){
+  return `<div class="detail-item"><span>${title.toUpperCase()}</span><b style="font-weight:600;font-size:12px">${sub}</b></div>`;
+}
+
+/* =========================================================
+   PAGE: SYSTEM STATUS
+   ========================================================= */
+function pageStatus(){
+  const services = [
+    ["Frontend Interface","Operational","99.9%"],
+    ["Data Ingestion (simulated)","Operational","98.7%"],
+    ["AI Analysis Engine","Operational","97.9%"],
+    ["Local Data Store","Operational","100%"],
+    ["GIS Map Layer","Operational","99.4%"],
+    ["Alert Engine","Operational","99.1%"]
+  ];
+  return `
+  <div class="page-head"><div><div class="eyebrow">PROTOTYPE HEALTH</div><h1>System Status</h1><p>Demonstration service status for the CODEMATE frontend prototype.</p></div><span class="pill green">All demo services healthy</span></div>
+  <div class="grid g-cols-3" style="margin-bottom:18px">
+    ${services.map(s=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">${s[0]}</b><span style="width:9px;height:9px;border-radius:50%;background:#166534"></span></div>
+        <div style="margin-top:8px;font-size:12px;color:var(--success-700);font-weight:700">${s[1]}</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:3px">${s[2]} uptime (demo)</div>
+      </div>
+    `).join("")}
+  </div>
+  <div class="card">
+    <div class="section-head"><div><h2>Prototype Controls</h2><p>Data is stored in this browser using LocalStorage only.</p></div></div>
+    <p style="font-size:12.3px;color:var(--muted);margin:0 0 12px">Resetting will discard any citizen reports you've submitted in this browser and restore the original demonstration dataset.</p>
+    <button class="row-btn" style="background:var(--crit-100);color:var(--crit-700);border-color:transparent" onclick="resetDemo()">Reset demo data</button>
+  </div>`;
+}
+function resetDemo(){
+  if(!confirm("Reset all prototype data to the original demo dataset?")) return;
+  state.reports = seedReports();
+  saveData();
+  go("overview");
+  toast("Prototype data reset.");
+}
+
+/* =========================================================
+   REPORT INSPECT MODAL
+   ========================================================= */
+function inspect(id){
+  const r = state.reports.find(x=>x.id===id);
+  if(!r){ toast("Report not found.","error"); return; }
+
+  const related = state.reports.filter(x=>x.id!==r.id && x.city===r.city && x.event===r.event).slice(0,3);
+  const chainSteps = ["Collected","Processed","AI Analyzed","Correlated", r.status==="Verified"?"Verified": r.status==="Rejected"?"Rejected":"Under Review"];
+  const doneCount = r.status==="Submitted" ? 2 : r.status==="AI Analyzed" ? 3 : ["Under Review","Needs Review"].includes(r.status) ? 4 : 5;
+
+  const mediaHTML = r.media
+    ? (r.media.startsWith("data:video") ? `<video controls class="evidence-img" src="${r.media}"></video>` : `<img class="evidence-img" src="${r.media}" alt="Uploaded evidence">`)
+    : `<p style="font-size:11.7px;color:var(--muted)">No media evidence attached to this report.</p>`;
+
+  $("modalRoot").innerHTML = `
+  <div class="modal-back" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <div><span>WEATHER REPORT INVESTIGATION</span><h2>${esc(r.id)}</h2></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          ${detailItem("Source", r.source)}
+          ${detailItem("Reporter", r.name||"—")}
+          ${detailItem("Location", r.city+", "+r.state)}
+          ${detailItem("Event", r.event)}
+          ${detailItem("Severity", r.severity)}
+          ${detailItem("Status", r.status)}
+          ${detailItem("AI Trust Signal", r.trust+"%")}
+          ${detailItem("Duplicate Signal", (r.duplicate||0)+"%")}
+          ${detailItem("Cross-Source Consistency", r.crossSource||"Low")}
+          ${detailItem("Reported", timeAgo(r.time))}
+        </div>
+
+        <div class="modal-sub">
+          <h3>Observation</h3>
+          <p style="font-size:13px;line-height:1.6">${esc(r.description)||"—"}</p>
+          ${r.landmark ? `<p style="font-size:11.7px;color:var(--muted)"><b>Landmark:</b> ${esc(r.landmark)}</p>` : ""}
+        </div>
+
+        <div class="modal-sub">
+          <h3>Evidence</h3>
+          ${mediaHTML}
+        </div>
+
+        <div class="modal-sub">
+          <h3>AI-Assisted Recommendation</h3>
+          <div class="note-box blue" style="margin:0">${esc(r.aiRecommendation || "Awaiting AI analysis.")}</div>
+        </div>
+
+        <div class="modal-sub">
+          <h3>Processing Trail</h3>
+          <div class="chain">${chainSteps.map((s,i)=>`<span class="${i<doneCount?'done':''}">${s}</span>`).join("")}</div>
+        </div>
+
+        ${related.length ? `
+        <div class="modal-sub">
+          <h3>Related / Nearby Reports</h3>
+          ${related.map(x=>`<div class="related-item"><span>${esc(x.id)} · ${esc(x.source)} · ${esc(x.severity)}</span><button class="row-btn" onclick="inspect('${x.id}')">View</button></div>`).join("")}
+        </div>` : ""}
+
+        <div class="modal-sub">
+          <h3>Verification Action</h3>
+          <div class="modal-actions">
+            <button class="act-btn verify" ${state.role!=="admin"?"disabled":""} onclick="changeStatus('${r.id}','Verified')">✓ Verify</button>
+            <button class="act-btn review" ${state.role!=="admin"?"disabled":""} onclick="changeStatus('${r.id}','Needs Review')">⚠ Needs Review</button>
+            <button class="act-btn reject" ${state.role!=="admin"?"disabled":""} onclick="changeStatus('${r.id}','Rejected')">✕ Reject</button>
+          </div>
+          ${state.role!=="admin" ? `<div class="admin-only-note">Switch to Government Admin to take verification actions on this report.</div>` : ""}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function detailItem(label,val){
+  return `<div class="detail-item"><span>${label.toUpperCase()}</span><b>${esc(val)}</b></div>`;
+}
+function closeModal(){ $("modalRoot").innerHTML = ""; }
+
+function changeStatus(id, status){
+  if(state.role!=="admin"){ toast("Switch to Government Admin to verify reports.","error"); return; }
+  const r = state.reports.find(x=>x.id===id);
+  if(!r) return;
+  r.status = status;
+  r.aiRecommendation = status==="Verified"
+    ? "Verified by Government/IMD reviewer."
+    : status==="Rejected"
+      ? "Rejected by Government/IMD reviewer — insufficient evidence."
+      : "Flagged for further review by Government/IMD reviewer.";
+  saveData();
+  closeModal();
+  toast(id+" updated to \u201c"+status+"\u201d.");
+  go(state.page);
+}
+
+/* =========================================================
+   KEYBOARD: close modal on escape
+   ========================================================= */
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
+
+</script>
+</body>
+</html>
