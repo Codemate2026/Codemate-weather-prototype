@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CODEMATE | National Weather Big Data Analytics Platform — SIH26069</title>
+<meta name="description" content="SIH26069 prototype: multi-source weather intelligence platform for India with AI-assisted verification and GIS visualization.">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+ --navy:#09233f;
+ --navy2:#123b63;
+ --blue:#1976d2;
+ --cyan:#00a6d6;
+ --gold:#f4b400;
+ --green:#159957;
+ --red:#d93025;
+ --orange:#f57c00;
+ --purple:#7950f2;
+ --bg:#f3f7fb;
+ --card:#ffffff;
+ --text:#172b3a;
+ --muted:#6b7c8d;
+ --border:#dce5ed;
+ --shadow:0 8px 24px rgba(18,59,99,.09);
+}
+
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ font-family:Inter,Segoe UI,Arial,sans-serif;
+ background:var(--bg);
+ color:var(--text);
+}
+
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+a{color:var(--blue)}
+
+/* TOP BAR */
+.topbar{
+ height:70px;
+ background:linear-gradient(90deg,var(--navy),var(--navy2));
+ color:white;
+ display:flex;
+ align-items:center;
+ padding:0 18px;
+ gap:14px;
+ position:sticky;
+ top:0;
+ z-index:1000;
+ box-shadow:0 4px 15px rgba(0,0,0,.18);
+}
+
+.logo{display:flex;align-items:center;gap:10px;min-width:220px}
+
+.logoMark{
+ width:42px;height:42px;border-radius:12px;background:#fff;
+ display:flex;align-items:center;justify-content:center;
+ color:var(--navy);font-weight:900;font-size:18px;border:3px solid #f4b400;
+}
+
+.logoText{font-size:19px;font-weight:900;letter-spacing:1px}
+.logoSub{font-size:9px;opacity:.75;margin-top:2px}
+
+.menuBtn{
+ width:44px;height:44px;border:1px solid rgba(255,255,255,.2);
+ background:rgba(255,255,255,.08);color:#fff;border-radius:10px;
+ font-size:24px;display:none;
+}
+
+.topTitle{flex:1;text-align:center;font-size:15px;font-weight:700;letter-spacing:.3px}
+
+.roleBtns{display:flex;gap:7px}
+
+.roleBtn{
+ border:1px solid rgba(255,255,255,.28);color:white;
+ background:rgba(255,255,255,.08);padding:9px 13px;border-radius:9px;font-weight:700;
+}
+
+.roleBtn.active{background:#f4b400;color:#172b3a;border-color:#f4b400}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 70px)}
+
+.sidebar{
+ width:255px;background:#fff;border-right:1px solid var(--border);
+ padding:15px 11px;position:fixed;left:0;top:70px;bottom:0;
+ overflow:auto;z-index:900;transition:.25s;
+}
+
+.main{margin-left:255px;width:calc(100% - 255px);padding:22px;min-height:calc(100vh - 70px)}
+
+.navSection{margin:14px 8px 6px;font-size:10px;font-weight:900;color:#91a0ae;text-transform:uppercase;letter-spacing:1px}
+.navSection:first-child{margin-top:2px}
+
+.navItem{
+ width:100%;border:0;background:transparent;text-align:left;
+ padding:11px 12px;border-radius:9px;color:#415466;font-weight:650;margin-bottom:3px;
+ display:flex;align-items:center;gap:9px;
+}
+
+.navItem:hover{background:#edf5fb;color:var(--blue)}
+.navItem.active{background:#e7f2fc;color:var(--blue);font-weight:800}
+
+.sidebarFooter{border-top:1px solid var(--border);margin-top:15px;padding:14px 8px;color:var(--muted);font-size:11px;line-height:1.6}
+
+/* LOGIN */
+.loginScreen{
+ min-height:100vh;
+ background:
+ radial-gradient(circle at 20% 20%,rgba(0,166,214,.18),transparent 28%),
+ radial-gradient(circle at 80% 80%,rgba(244,180,0,.14),transparent 28%),
+ linear-gradient(135deg,#06192d,#103b61);
+ display:flex;align-items:center;justify-content:center;padding:25px;
+}
+
+.loginBox{width:min(880px,100%);background:rgba(255,255,255,.97);border-radius:22px;padding:34px;box-shadow:0 25px 80px rgba(0,0,0,.3)}
+.loginHeader{text-align:center;margin-bottom:28px}
+
+.loginHeader .bigLogo{
+ width:70px;height:70px;border-radius:20px;margin:auto;display:flex;
+ align-items:center;justify-content:center;background:var(--navy);color:#fff;
+ border:4px solid var(--gold);font-size:27px;font-weight:900;
+}
+
+.loginHeader h1{margin:14px 0 4px;color:var(--navy)}
+.loginHeader p{margin:0;color:var(--muted)}
+.loginHeader .psTag{
+ display:inline-block;margin-top:10px;font-size:11px;font-weight:800;
+ background:#eef4fa;color:var(--navy2);padding:5px 12px;border-radius:20px;
+}
+
+.roleCards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+.roleCard{border:2px solid var(--border);border-radius:17px;padding:27px;text-align:center;background:#fff;transition:.2s}
+.roleCard:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#8bbde4}
+.roleIcon{font-size:42px;margin-bottom:10px}
+.roleCard h2{margin:5px 0;color:var(--navy)}
+.roleCard p{color:var(--muted);font-size:13px;line-height:1.6;min-height:45px}
+
+.enterBtn{border:0;padding:12px 22px;border-radius:10px;background:var(--navy);color:white;font-weight:800;width:100%}
+.enterBtn.admin{background:var(--gold);color:#1d2a34}
+
+.note{background:#f3f8fd;border:1px solid #d9e9f7;border-radius:12px;padding:12px 14px;font-size:12px;color:#3a5063;line-height:1.6}
+.note.warn{background:#fff8ea;border-color:#f3dea6;color:#7a5b0a}
+
+/* PAGE */
+.pageHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px;flex-wrap:wrap}
+.pageHeader h1{margin:0;color:var(--navy);font-size:25px}
+.pageHeader p{margin:5px 0 0;color:var(--muted);font-size:13px;max-width:640px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:30px;font-size:10px;font-weight:800;white-space:nowrap}
+.badge.green{background:#e4f6ed;color:#087a43}
+.badge.red{background:#fde8e6;color:#b42318}
+.badge.orange{background:#fff1df;color:#a85300}
+.badge.blue{background:#e5f1fc;color:#0c5ea8}
+.badge.gray{background:#eef1f4;color:#586876}
+.badge.purple{background:#eee9ff;color:#5a37c4}
+.badge.gold{background:#fff6da;color:#8a6a00}
+
+/* CARDS */
+.grid{display:grid;gap:15px}
+.kpiGrid{grid-template-columns:repeat(4,1fr)}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow);padding:17px}
+
+.kpi{min-height:125px;position:relative;overflow:hidden}
+.kpiIcon{position:absolute;right:15px;top:15px;font-size:25px;opacity:.85}
+.kpiLabel{color:var(--muted);font-size:11px;font-weight:700}
+.kpiValue{font-size:30px;font-weight:900;color:var(--navy);margin-top:12px}
+.kpiFoot{font-size:10px;color:var(--muted);margin-top:5px}
+
+.sectionTitle{font-size:15px;color:var(--navy);font-weight:900;margin:0 0 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* PIPELINE */
+.pipeline{display:flex;align-items:center;gap:7px;overflow:auto;padding:4px 0 7px}
+.pipe{min-width:120px;background:#f7fafc;border:1px solid var(--border);border-radius:11px;padding:12px 8px;text-align:center;font-size:11px;font-weight:800}
+.pipeIcon{font-size:20px;display:block;margin-bottom:5px}
+.pipeCount{display:block;margin-top:4px;color:var(--blue);font-size:13px}
+.arrow{color:var(--gold);font-size:21px;font-weight:900}
+
+/* CHARTS */
+.chartGrid{display:grid;grid-template-columns:1.35fr 1fr;gap:15px}
+.chartBox{height:310px;position:relative}
+.chartBox canvas{width:100%!important;height:100%!important}
+
+/* MAP (illustrative, canvas-drawn — no external image dependency) */
+.mapCard{min-height:580px}
+.mapToolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.filterBtn{border:1px solid var(--border);background:#fff;padding:8px 11px;border-radius:8px;font-size:11px;font-weight:700}
+.filterBtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+.mapLayout{display:grid;grid-template-columns:1fr 300px;gap:15px}
+
+.mapCanvasWrap{
+ position:relative;height:490px;border-radius:14px;overflow:hidden;
+ background:
+  linear-gradient(rgba(18,59,99,.05) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(18,59,99,.05) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(160deg,#eef6fc,#f8fbff 60%,#eef6fc);
+ border:1px solid var(--border);
+}
+
+.mapCaption{
+ position:absolute;left:12px;top:10px;font-size:11px;font-weight:800;
+ color:#7c93a8;letter-spacing:.3px;
+}
+
+.mapPoint{
+ position:absolute;width:16px;height:16px;border-radius:50%;
+ border:3px solid white;box-shadow:0 2px 9px rgba(0,0,0,.3);
+ cursor:pointer;z-index:5;transform:translate(-50%,-50%);
+ transition:transform .15s;
+}
+.mapPoint:hover{transform:translate(-50%,-50%) scale(1.3);z-index:6}
+.mapPoint.green{background:#159957}
+.mapPoint.orange{background:#f57c00}
+.mapPoint.red{background:#d93025}
+.mapPoint.blue{background:#1976d2}
+.mapPoint.gray{background:#8a97a3}
+
+.mapLegend{
+ position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.95);
+ padding:10px 12px;border-radius:9px;font-size:10px;box-shadow:0 3px 12px rgba(0,0,0,.1);
+}
+.legendRow{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.legendRow:last-child{margin-bottom:0}
+.legendDot{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+.mapSidepanel{display:flex;flex-direction:column;gap:12px}
+.mapInfo{min-height:200px}
+.mapInfo .empty{color:var(--muted);font-size:12px;text-align:center;padding:40px 10px}
+
+/* FORMS */
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:11px;font-weight:800;color:var(--navy2);letter-spacing:.2px}
+.field input,.field select,.field textarea{
+ border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;font-size:13px;background:#fff;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+.field textarea{min-height:90px;resize:vertical}
+.field small{color:var(--muted);font-size:10.5px}
+
+.submitBtn{border:0;padding:13px 22px;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px}
+.submitBtn:disabled{opacity:.6;cursor:progress}
+
+.filePreview{margin-top:6px;font-size:11px}
+.file-selected{color:var(--green);font-weight:700}
+.file-error{color:var(--red);font-weight:700}
+
+/* TABLE */
+.tableWrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{
+ text-align:left;background:#f5f9fc;color:var(--muted);font-size:10.5px;
+ text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;font-weight:800;
+ position:sticky;top:0;
+}
+td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}
+tr.rowlink{cursor:pointer}
+tr.rowlink:hover td{background:#f7fafd}
+
+.trustBar{width:70px;height:6px;background:#eef1f4;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.trustBar > div{height:100%}
+
+.actionBtn{border:1px solid var(--border);background:#fff;padding:6px 8px;border-radius:7px;font-size:10px;font-weight:800}
+.actionBtn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.actionBtn.green{background:#159957;color:#fff;border-color:#159957}
+.actionBtn.red{background:#d93025;color:#fff;border-color:#d93025}
+.actionBtn.orange{background:#f57c00;color:#fff;border-color:#f57c00}
+.actionBtn.gold{background:var(--gold);color:#3a2c00;border-color:var(--gold)}
+
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filters input,.filters select{border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:12.5px}
+
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .big{font-size:38px;margin-bottom:10px}
+
+/* VERIFICATION PANEL */
+.verifyPanel{border:1.5px dashed var(--border);border-radius:12px;padding:14px;margin-top:10px;background:#fbfdff}
+.verifyRow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #eef2f6;font-size:12.5px}
+.verifyRow:last-child{border-bottom:0}
+.verifyRow strong{color:var(--navy)}
+.verifySummary{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;background:#fff;border-radius:8px;padding:10px;border:1px solid var(--border)}
+.sourceTag{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px}
+.sourceTag.real{background:#e4f6ed;color:#087a43}
+.sourceTag.sim{background:#fff1df;color:#a85300}
+
+/* MODAL */
+.modalBack{position:fixed;inset:0;background:rgba(9,35,63,.55);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:18px;max-width:640px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.modal.small{max-width:440px}
+.modalHead{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff}
+.modalHead h2{margin:4px 0 0;color:var(--navy);font-size:19px}
+.modalHead span{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.5px}
+.closeBtn{border:0;background:#f1f4f7;width:32px;height:32px;border-radius:50%;font-size:16px;color:var(--muted)}
+.modalBody{padding:20px 22px}
+.modalActions{display:flex;gap:8px;padding:16px 22px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+.detailGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.infoRow{margin-bottom:12px}
+.infoLabel{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+.infoValue{font-size:13.5px;color:var(--text);margin-top:3px;font-weight:600}
+
+.mediaThumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.mediaThumbs img,.mediaThumbs video{width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+
+/* TOAST */
+.toast{position:fixed;right:20px;bottom:20px;background:var(--navy);color:white;padding:12px 16px;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,.25);z-index:4000;font-size:12px;font-weight:700;max-width:340px;animation:toastIn .2s ease}
+@keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* HEALTH */
+.healthGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.health{text-align:center}
+.healthCircle{width:80px;height:80px;border-radius:50%;margin:10px auto;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff}
+
+/* ALERTS */
+.alertGrid{grid-template-columns:repeat(2,1fr)}
+.alertCard{border-left:4px solid var(--blue)}
+.alertCard.warning{border-left-color:var(--orange)}
+.alertTitle{font-weight:800;color:var(--navy);margin-bottom:8px;font-size:13.5px}
+.alertText{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+/* METHOD PAGE */
+.methodStep{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.methodStep:last-child{border-bottom:0}
+.methodNum{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0}
+.methodBody h4{margin:0 0 5px;color:var(--navy);font-size:13.5px}
+.methodBody p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.65}
+
+/* RESPONSIVE */
+@media (max-width:980px){
+ .kpiGrid{grid-template-columns:repeat(2,1fr)}
+ .chartGrid{grid-template-columns:1fr}
+ .mapLayout{grid-template-columns:1fr}
+ .formGrid{grid-template-columns:1fr}
+ .alertGrid{grid-template-columns:1fr}
+ .healthGrid{grid-template-columns:1fr}
+}
+
+@media (max-width:760px){
+ .menuBtn{display:block}
+ .topTitle{display:none}
+ .sidebar{transform:translateX(-100%)}
+ .sidebar.open{transform:translateX(0)}
+ .main{margin-left:0;width:100%}
+ .roleCards{grid-template-columns:1fr}
+ .kpiGrid{grid-template-columns:1fr 1fr}
+}
+
+/* ---------- NEW: REPUTATION / CLUSTERS / LIVE FEED / ARCHITECTURE ---------- */
+
+.repBadge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px}
+.repBadge.high{background:#e4f6ed;color:#087a43}
+.repBadge.mid{background:#fff6da;color:#8a6a00}
+.repBadge.low{background:#fde8e6;color:#b42318}
+.repBadge.new{background:#eef1f4;color:#586876}
+
+.clusterBadge{
+ display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;
+ background:#eef2ff;color:#3949ab;padding:4px 9px;border-radius:20px;
+}
+
+.flagChip{
+ display:inline-block;font-size:10px;font-weight:700;background:#fff1df;color:#a85300;
+ padding:3px 8px;border-radius:20px;margin:2px 4px 2px 0;
+}
+.flagChip.severe{background:#fde8e6;color:#b42318}
+
+.categoryCheck{
+ display:flex;align-items:center;gap:8px;font-size:11.5px;background:#f7fafc;
+ border:1px dashed var(--border);border-radius:8px;padding:8px 10px;margin-top:6px;
+}
+.categoryCheck.match{border-color:#bfe3cd;background:#f2fbf6;color:#087a43}
+.categoryCheck.mismatch{border-color:#f6cfc9;background:#fdf3f1;color:#b42318}
+
+.gpsBtn{border:1px dashed var(--blue);background:#f2f8fd;color:var(--blue);border-radius:9px;padding:9px 12px;font-weight:800;font-size:11.5px;width:100%}
+.gpsBtn:disabled{opacity:.6;cursor:progress}
+
+/* Live ingestion feed */
+.intakeFeed{max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.intakeItem{
+ border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;
+ background:#fff;display:flex;flex-direction:column;gap:6px;animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.intakeHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.intakeChannel{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;background:#eef1f4;color:#586876}
+.intakeStage{font-size:10.5px;font-weight:800;color:var(--blue)}
+.intakeStage.done{color:var(--green)}
+.stageTrack{display:flex;gap:4px;margin-top:2px}
+.stageDot{width:100%;height:4px;border-radius:3px;background:#e6ebf0}
+.stageDot.on{background:var(--blue)}
+.stageDot.done{background:var(--green)}
+
+/* Architecture page */
+.archRow{display:flex;align-items:stretch;gap:8px;overflow-x:auto;padding:6px 0 12px}
+.archBox{
+ min-width:150px;background:#f7fafc;border:1.5px solid var(--border);border-radius:12px;
+ padding:14px 10px;text-align:center;font-size:11.5px;font-weight:700;color:var(--navy2);
+ display:flex;flex-direction:column;justify-content:center;gap:4px;
+}
+.archBox small{font-weight:500;color:var(--muted);font-size:10px}
+.archArrow{display:flex;align-items:center;color:var(--gold);font-size:20px;font-weight:900}
+
+.apiBlock{
+ background:#0d1b2a;color:#c9e6ff;border-radius:12px;padding:16px;font-family:Consolas,Menlo,monospace;
+ font-size:11.5px;overflow:auto;line-height:1.6;
+}
+.apiBlock .k{color:#8fd0ff}
+.apiBlock .s{color:#ffd479}
+.apiBlock .c{color:#7fbf7f}
+
+.filtersBar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:flex-end}
+.filtersBar .fgroup{display:flex;flex-direction:column;gap:4px}
+.filtersBar .fgroup label{font-size:9.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.filtersBar input,.filtersBar select{border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px}
+
+.demoTag{margin-top:8px;font-size:10px;font-weight:700;color:var(--muted);background:#f3f6f9;border-radius:20px;padding:4px 10px;display:inline-block}
+
+.globalSearch{
+ flex:1;max-width:340px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);
+ color:#fff;border-radius:9px;padding:9px 12px;font-size:12.5px;
+}
+.globalSearch::placeholder{color:rgba(255,255,255,.65)}
+
+.notifPanel{
+ position:absolute;right:0;top:52px;width:320px;max-height:400px;overflow:auto;
+ background:#fff;border-radius:12px;box-shadow:0 15px 40px rgba(0,0,0,.25);z-index:2000;color:var(--text);
+}
+.notifItem{padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px}
+.notifItem.unread{background:#f2f8fd}
+.notifItem .t{font-size:10px;color:var(--muted);margin-top:3px}
+
+.correlationChain{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.chainStep{display:flex;align-items:center;gap:10px;font-size:12px;background:#f7fafc;border:1px solid var(--border);border-radius:9px;padding:9px 12px}
+.chainStep.support{border-color:#bfe3cd;background:#f2fbf6}
+.chainArrowDown{text-align:center;color:var(--gold);font-size:16px}
+
+.auditItem{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eef2f6;font-size:11.5px}
+.auditItem:last-child{border-bottom:0}
+.auditTime{color:var(--muted);min-width:130px;flex-shrink:0}
+
+.starRow{display:flex;gap:6px;margin:8px 0}
+.starBtn{font-size:22px;background:none;border:0;color:#dfe4e8;cursor:pointer}
+.starBtn.on{color:#f4b400}
+
+.confidenceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.confBox{text-align:center;background:#f7fafc;border:1px solid var(--border);border-radius:10px;padding:10px 6px}
+.confBox .num{font-size:19px;font-weight:900;color:var(--navy)}
+.confBox .lbl{font-size:9.5px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px}
+
+#leafletMap{width:100%;height:100%;border-radius:14px}
+.leaflet-popup-content{font-size:12.5px}
+
+.notifBadge{
+ position:absolute;top:-4px;right:-4px;background:#d93025;color:#fff;font-size:9px;font-weight:800;
+ min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="loginScreen">
+ <div class="loginBox">
+  <div class="loginHeader">
+   <div class="bigLogo">CM</div>
+   <h1>CODEMATE</h1>
+   <p>National Weather Big Data Analytics Platform</p>
+   <div class="psTag">Smart India Hackathon 2026 · SIH26069 · Ministry of Earth Sciences / IMD</div>
+   <div class="psTag" style="background:#fff6da;color:#8a6a00;margin-left:6px">● DEMO MODE — browser-local data</div>
+  </div>
+
+  <div class="roleCards">
+   <div class="roleCard">
+    <div class="roleIcon">👤</div>
+    <h2>Citizen / User</h2>
+    <p>Report weather events with live GPS, evidence and free-text description — auto-categorized and cross-checked automatically.</p>
+    <button class="enterBtn" onclick="enterRole('user')">Enter as Citizen</button>
+    <div class="demoTag">DEMO ACCOUNT: citizen@codemate.demo</div>
+   </div>
+
+   <div class="roleCard">
+    <div class="roleIcon">🏛️</div>
+    <h2>Government / Admin</h2>
+    <p>Monitor multi-source ingestion, review AI verification evidence, manage deduplicated event clusters and issue alerts.</p>
+    <button class="enterBtn admin" onclick="enterRole('admin')">Enter as Government Admin</button>
+    <div class="demoTag">DEMO ACCOUNT: admin@codemate.demo</div>
+   </div>
+  </div>
+
+  <div style="text-align:center;margin-top:14px">
+   <span class="badge gold">● DEMO MODE</span>
+   <button class="actionBtn primary" style="margin-left:8px" onclick="resetDemo()">↻ Load Demo Data</button>
+  </div>
+
+  <div class="note" style="margin-top:18px">
+   <strong>Prototype scope.</strong> This demo runs real geocoding, real live-weather
+   cross-verification, real text-based event categorization and duplicate clustering,
+   entirely in the browser, with a real interactive India map (Leaflet + OpenStreetMap).
+   Bulk live social-media scraping and a shared multi-user backend are out of scope for a
+   static client-side demo — see <strong>Platform Architecture</strong> inside the app for
+   exactly what's real, what's simulated, and how this would scale in production, including
+   a ready-to-build backend API contract.
+  </div>
+ </div>
+</div>
+
+
+<!-- APPLICATION -->
+<div id="app" class="hidden">
+
+ <header class="topbar">
+  <button class="menuBtn" onclick="toggleMenu()">☰</button>
+
+  <div class="logo">
+   <div class="logoMark">CM</div>
+   <div>
+    <div class="logoText">CODEMATE</div>
+    <div class="logoSub">WEATHER INTELLIGENCE</div>
+   </div>
+  </div>
+
+  <input id="globalSearch" class="globalSearch" placeholder="🔍 Search report ID, city, event..." onkeydown="if(event.key==='Enter')runGlobalSearch()">
+
+  <div class="roleBtns">
+   <div style="position:relative">
+    <button class="roleBtn" onclick="toggleNotifPanel()" title="Notifications">🔔<span id="notifBadge" class="notifBadge" style="display:none">0</span></button>
+    <div id="notifPanel" class="notifPanel hidden"></div>
+   </div>
+   <button id="userRoleBtn" class="roleBtn" onclick="enterRole('user')">👤 User</button>
+   <button id="adminRoleBtn" class="roleBtn" onclick="enterRole('admin')">🏛️ Admin</button>
+  </div>
+ </header>
+
+
+ <div class="layout">
+
+  <aside id="sidebar" class="sidebar">
+
+   <div class="navSection">Monitoring</div>
+   <button class="navItem active" data-page="overview" onclick="go('overview')">📊 Overview</button>
+   <button class="navItem" data-page="map" onclick="go('map')">🗺️ Live Weather Map</button>
+   <button class="navItem" data-page="reports" onclick="go('reports')">📥 Incoming Reports</button>
+   <button class="navItem" data-page="hotspots" onclick="go('hotspots')">🔥 State Hotspots</button>
+   <button class="navItem" data-page="ingestion" onclick="go('ingestion')">📡 Live Ingestion</button>
+
+   <div class="navSection">Intelligence</div>
+   <button class="navItem" data-page="analytics" onclick="go('analytics')">📈 Analytics</button>
+   <button class="navItem" data-page="reputation" onclick="go('reputation')">🧾 Reporter Reputation</button>
+   <button class="navItem" data-page="sources" onclick="go('sources')">🌐 Data Sources</button>
+   <button class="navItem" data-page="architecture" onclick="go('architecture')">🏗️ Platform Architecture</button>
+
+   <div class="navSection">Citizen</div>
+   <button class="navItem" data-page="report" onclick="go('report')">📝 Report Weather Event</button>
+   <button class="navItem" data-page="myreports" onclick="go('myreports')">📋 My Reports</button>
+
+   <div class="navSection">Alerts</div>
+   <button class="navItem" data-page="alerts" onclick="go('alerts')">🚨 Alerts &amp; Decision Support</button>
+   <button class="navItem" data-page="emergency" onclick="go('emergency')">🆘 Emergency Assistance</button>
+
+   <div class="navSection">System</div>
+   <button class="navItem" data-page="health" onclick="go('health')">💚 System Health</button>
+
+   <button id="switchRoleNav" class="navItem" onclick="switchRole()">🔄 Switch Role</button>
+   <button class="navItem" onclick="logout()">🚪 Exit Platform</button>
+
+   <div class="sidebarFooter">
+    <strong>CODEMATE Prototype</strong><br>
+    SIH26069 • MoES / IMD<br>
+    Disaster Management Theme
+   </div>
+
+  </aside>
+
+  <main id="main" class="main"><!-- content inserted by JavaScript --></main>
+
+ </div>
+</div>
+
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* =========================================================
+   CODEMATE — NATIONAL WEATHER BIG DATA ANALYTICS PLATFORM
+   SIH26069 · Ministry of Earth Sciences (MoES) / IMD
+   Single-file prototype. No backend, no build step.
+
+   WHAT IS REAL vs SIMULATED — stated openly, see also the
+   in-app "Platform Architecture" page:
+
+   REAL, running live in this browser:
+   - Geocoding of any city/state (built-in list + Open-Meteo
+     geocoding API fallback).
+   - Live GPS capture via the browser Geolocation API, with
+     free reverse-geocoding (BigDataCloud client API).
+   - Cross-checking a claimed weather event against live/recent
+     weather data (Open-Meteo forecast API, free, no key).
+   - Text-based event categorization: a keyword-scored
+     classifier reads the free-text description and infers the
+     event type itself, independent of the dropdown the citizen
+     picked, and flags a mismatch when they disagree.
+   - Duplicate / near-duplicate clustering using text similarity
+     (Jaccard over word sets) combined with geo/time proximity —
+     raw reports are merged into deduplicated "event clusters".
+   - A reporter reputation system that persists across
+     submissions in this browser and adjusts with each
+     verified/rejected outcome.
+   - CAP v1.2 alert XML generation for verified critical events,
+     downloadable for real.
+
+   SIMULATED, clearly labelled wherever shown:
+   - Live multi-source ingestion (social media / #IMD, news
+     feeds, public datasets). Bulk programmatic scraping of
+     X/Instagram/Facebook is restricted or paid and cannot run
+     from a static client-side page — the "Live Ingestion" page
+     demonstrates how such a feed WOULD be processed through the
+     exact same pipeline, with synthetic but realistic items.
+   ========================================================= */
+
+(function(){
+"use strict";
+
+const STORAGE_KEY   = "codemate_reports_v3";
+const ROLE_KEY      = "codemate_role_v3";
+const REPUTATION_KEY= "codemate_reputation_v3";
+
+/* ---------- INDIA BOUNDING BOX (illustrative map projection) ---------- */
+
+const INDIA_BOUNDS = { latMin:6.5, latMax:35.8, lonMin:68.0, lonMax:97.5 };
+
+function latLonToPercent(lat, lon){
+ const x = ((lon - INDIA_BOUNDS.lonMin) / (INDIA_BOUNDS.lonMax - INDIA_BOUNDS.lonMin)) * 100;
+ const y = 100 - ((lat - INDIA_BOUNDS.latMin) / (INDIA_BOUNDS.latMax - INDIA_BOUNDS.latMin)) * 100;
+ return [Math.min(96,Math.max(4,x)), Math.min(96,Math.max(4,y))];
+}
+
+/* ---------- KNOWN CITY COORDINATES ---------- */
+
+const KNOWN_CITIES = {
+ "pune":[18.5204,73.8567], "mumbai":[19.0760,72.8777], "delhi":[28.7041,77.1025],
+ "new delhi":[28.6139,77.2090], "kolkata":[22.5726,88.3639], "jaipur":[26.9124,75.7873],
+ "bengaluru":[12.9716,77.5946], "bangalore":[12.9716,77.5946], "guwahati":[26.1445,91.7362],
+ "ahmedabad":[23.0225,72.5714], "chennai":[13.0827,80.2707], "srinagar":[34.0837,74.7973],
+ "hyderabad":[17.3850,78.4867], "bhopal":[23.2599,77.4126], "lucknow":[26.8467,80.9462],
+ "patna":[25.5941,85.1376], "kochi":[9.9312,76.2673], "nagpur":[21.1458,79.0882],
+ "surat":[21.1702,72.8311], "indore":[22.7196,75.8577], "chandigarh":[30.7333,76.7794],
+ "bhubaneswar":[20.2961,85.8245], "thiruvananthapuram":[8.5241,76.9366],
+ "raipur":[21.2514,81.6296], "ranchi":[23.3441,85.3096], "dehradun":[30.3165,78.0322],
+ "shimla":[31.1048,77.1734], "gandhinagar":[23.2156,72.6369], "amritsar":[31.6340,74.8723],
+ "varanasi":[25.3176,82.9739], "nashik":[19.9975,73.7898], "vadodara":[22.3072,73.1812],
+ "coimbatore":[11.0168,76.9558], "visakhapatnam":[17.6868,83.2185], "agra":[27.1767,78.0081]
+};
+
+const geoCache = Object.assign({}, KNOWN_CITIES);
+
+/* ---------- EVENT CATEGORIES + KEYWORD MODEL ----------
+   A lightweight keyword-scored text classifier. This is what
+   auto-categorizes free-text reports/posts — the PS explicitly
+   asks for automatic categorization of these seven event types. */
+
+const EVENT_CATEGORIES = ["Heavy Rainfall","Flooding","Thunderstorm","Heatwave","Fog","Dust Storm","Strong Winds"];
+
+const CATEGORY_KEYWORDS = {
+ "Heavy Rainfall": ["rain","rainfall","downpour","showers","drizzle","monsoon","wet","pouring"],
+ "Flooding": ["flood","flooding","waterlogged","waterlogging","submerged","inundat","overflow","drain","waist-deep","knee-deep"],
+ "Thunderstorm": ["thunder","thunderstorm","lightning","bolt","storm","clap"],
+ "Heatwave": ["heat","heatwave","hot","scorching","sweltering","sunstroke","temperature soared","unbearable heat"],
+ "Fog": ["fog","foggy","mist","misty","visibility","smog"],
+ "Dust Storm": ["dust","duststorm","sandstorm","haze","hazy","dusty"],
+ "Strong Winds": ["wind","windy","gale","gusty","breeze","cyclone","squall","gust"]
+};
+
+/* Returns { predicted, scores, confidence } from free text. */
+function classifyText(text){
+ const t = (text||"").toLowerCase();
+ const scores = {};
+ EVENT_CATEGORIES.forEach(cat=>{
+  scores[cat] = CATEGORY_KEYWORDS[cat].reduce((sum,kw)=> sum + (t.includes(kw) ? 1 : 0), 0);
+ });
+
+ let predicted=null, best=0;
+ Object.entries(scores).forEach(([cat,score])=>{
+  if(score>best){ best=score; predicted=cat; }
+ });
+
+ const totalHits = Object.values(scores).reduce((a,b)=>a+b,0);
+ const confidence = totalHits ? Math.round((best/totalHits)*100) : 0;
+
+ return { predicted, scores, confidence, hasSignal: best>0 };
+}
+
+/* ---------- SEED DATA ---------- */
+
+function isoHoursAgo(h){ return new Date(Date.now() - h*3600*1000).toISOString(); }
+
+const seedReports = [
+ {
+  id:"RPT-1001", origin:"citizen", channel:"Citizen App", name:"Rahul Patil", mobile:"98xxxxxx12",
+  city:"Pune", state:"Maharashtra", landmark:"Katraj", lat:18.5204, lon:73.8567,
+  event:"Heavy Rainfall", severity:"High", time:isoHoursAgo(3),
+  description:"Very heavy rainfall reported near Katraj with water accumulation on roads.",
+  media:[], status:"Verified", clusterId:null,
+  verification:{checked:true,agrees:true,corroboration:2,contradiction:0,trust:91,duplicateRisk:6,
+   categoryMatch:true,predictedCategory:"Heavy Rainfall",flags:[],
+   summary:"Live weather data for Pune at the reported time showed sustained rainfall, consistent with this report. Corroborated by 2 nearby reports."}
+ },
+ {
+  id:"RPT-1002", origin:"citizen", channel:"Citizen App", name:"Ayesha Khan", mobile:"97xxxxxx45",
+  city:"Mumbai", state:"Maharashtra", landmark:"Andheri Subway", lat:19.0760, lon:72.8777,
+  event:"Flooding", severity:"Critical", time:isoHoursAgo(5),
+  description:"Andheri subway flooded, waist-deep water, traffic diverted.",
+  media:[], status:"Verified", clusterId:null,
+  verification:{checked:true,agrees:true,corroboration:3,contradiction:0,trust:95,duplicateRisk:22,
+   categoryMatch:true,predictedCategory:"Flooding",flags:[],
+   summary:"Live weather data showed heavy precipitation over Mumbai in the preceding hours. Strongly corroborated by 3 nearby reports."}
+ },
+ {
+  id:"RPT-1003", origin:"citizen", channel:"Citizen App", name:"Vikram Singh", mobile:"90xxxxxx88",
+  city:"Jaipur", state:"Rajasthan", landmark:"Malviya Nagar", lat:26.9124, lon:75.7873,
+  event:"Dust Storm", severity:"Medium", time:isoHoursAgo(8),
+  description:"Visibility dropped sharply due to a dust storm in the afternoon.",
+  media:[], status:"Pending Verification", clusterId:null,
+  verification:{checked:true,agrees:null,corroboration:0,contradiction:0,trust:58,duplicateRisk:4,
+   categoryMatch:true,predictedCategory:"Dust Storm",flags:["Weather source cannot directly confirm dust/visibility"],
+   summary:"Elevated wind speed near the reported time is consistent with a dust event, but this free feed cannot directly confirm dust/visibility. Marked for manual review."}
+ },
+ {
+  id:"RPT-1004", origin:"citizen", channel:"Citizen App", name:"Meera Nair", mobile:"",
+  city:"Kochi", state:"Kerala", landmark:"Marine Drive", lat:9.9312, lon:76.2673,
+  event:"Thunderstorm", severity:"Medium", time:isoHoursAgo(14),
+  description:"Loud thunder and lightning near the waterfront, brief power flicker.",
+  media:[], status:"Needs Review", clusterId:null,
+  verification:{checked:true,agrees:false,corroboration:0,contradiction:1,trust:29,duplicateRisk:2,
+   categoryMatch:true,predictedCategory:"Thunderstorm",flags:["Weather data contradicts claim","No mobile number on file"],
+   summary:"Live weather data for Kochi at the reported time showed no significant precipitation or storm activity, which conflicts with this report. Flagged for manual review."}
+ },
+ {
+  id:"RPT-1005", origin:"citizen", channel:"Citizen App", name:"Anonymous Citizen", mobile:"",
+  city:"Srinagar", state:"Jammu & Kashmir", landmark:"Dal Lake Road", lat:34.0837, lon:74.7973,
+  event:"Fog", severity:"Low", time:isoHoursAgo(20),
+  description:"Reduced visibility due to fog this morning.",
+  media:[], status:"Verified", clusterId:null,
+  verification:{checked:true,agrees:true,corroboration:1,contradiction:0,trust:83,duplicateRisk:9,
+   categoryMatch:true,predictedCategory:"Fog",flags:[],
+   summary:"Live weather data showed conditions consistent with fog at the reported time and location."}
+ },
+ {
+  id:"RPT-1006", origin:"simulated", channel:"Social Media (#IMD)", name:"Simulated: #IMDWeather mention", mobile:"",
+  city:"Chennai", state:"Tamil Nadu", landmark:"Marina Beach", lat:13.0827, lon:80.2707,
+  event:"Strong Winds", severity:"Medium", time:isoHoursAgo(6),
+  description:"[Simulated social signal] Multiple posts tagged #IMD mentioning strong coastal winds near Marina Beach.",
+  media:[], status:"Pending Verification", clusterId:null,
+  verification:{checked:true,agrees:true,corroboration:0,contradiction:0,trust:50,duplicateRisk:0,
+   categoryMatch:true,predictedCategory:"Strong Winds",flags:["Simulated source — see Platform Architecture"],
+   summary:"Simulated social-media-sourced signal. Weather data was consistent with elevated wind speed."}
+ },
+ {
+  id:"RPT-1007", origin:"simulated", channel:"News RSS Feed", name:"Simulated: Regional news wire", mobile:"",
+  city:"Guwahati", state:"Assam", landmark:"Fancy Bazaar", lat:26.1445, lon:91.7362,
+  event:"Heavy Rainfall", severity:"High", time:isoHoursAgo(2),
+  description:"[Simulated feed signal] Local news wire reporting heavy rainfall and waterlogging.",
+  media:[], status:"Pending Verification", clusterId:null,
+  verification:{checked:true,agrees:true,corroboration:0,contradiction:0,trust:58,duplicateRisk:0,
+   categoryMatch:true,predictedCategory:"Heavy Rainfall",flags:["Simulated source — see Platform Architecture"],
+   summary:"Simulated news-feed signal. Weather data was broadly consistent with heavy rainfall."}
+ }
+];
+
+/* ---------- STATE ---------- */
+
+let reports = loadReports();
+let currentRole = localStorage.getItem(ROLE_KEY) || "";
+let currentPage = "overview";
+let charts = {};
+let mapFilterState = "all";
+let ingestionRunning = false;
+
+function loadReports(){
+ try{
+  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  if(Array.isArray(raw) && raw.length) return raw;
+ }catch(err){}
+ return JSON.parse(JSON.stringify(seedReports));
+}
+
+function saveReports(){
+ try{
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+  return true;
+ }catch(err){
+  try{
+   reports.forEach((r,i)=>{ if(i>6 && r.media && r.media.length) r.media=[]; });
+   localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+   toast("Storage was nearly full. Older evidence files were cleared to keep saving.","warn");
+   return true;
+  }catch(err2){
+   toast("Could not save: browser storage is full.","error");
+   return false;
+  }
+ }
+}
+
+/* ---------- REPUTATION STORE ----------
+   Tracks each reporter (by mobile number, or name if no mobile
+   was given) across submissions, independent of any single
+   report. This is what "verify untrusted sources" means here:
+   a source's track record, not just one submission's content. */
+
+function loadReputation(){
+ try{
+  const raw = JSON.parse(localStorage.getItem(REPUTATION_KEY) || "null");
+  if(raw && typeof raw==="object") return raw;
+ }catch(err){}
+ return {};
+}
+
+function saveReputation(rep){
+ try{ localStorage.setItem(REPUTATION_KEY, JSON.stringify(rep)); }catch(err){}
+}
+
+let reputationStore = loadReputation();
+
+function reporterKey(report){
+ if(report.mobile) return "m:"+report.mobile.trim();
+ if(report.name && report.name!=="Anonymous Citizen") return "n:"+report.name.trim().toLowerCase();
+ return null; /* anonymous reports don't build reputation */
+}
+
+function getReputation(key){
+ if(!key) return { submitted:0, verified:0, rejected:0, score:50, tier:"new" };
+ const r = reputationStore[key] || { submitted:0, verified:0, rejected:0 };
+ const score = clamp(50 + r.verified*8 - r.rejected*13, 5, 98);
+ const tier = !r.submitted ? "new" : score>=70 ? "high" : score>=45 ? "mid" : "low";
+ return { ...r, score, tier };
+}
+
+function recordSubmission(report){
+ const key = reporterKey(report);
+ if(!key) return;
+ if(!reputationStore[key]) reputationStore[key] = {submitted:0, verified:0, rejected:0};
+ reputationStore[key].submitted++;
+ saveReputation(reputationStore);
+}
+
+function recordOutcome(report, status){
+ const key = reporterKey(report);
+ if(!key) return;
+ if(!reputationStore[key]) reputationStore[key] = {submitted:0, verified:0, rejected:0};
+ if(status==="Verified") reputationStore[key].verified++;
+ if(status==="Rejected") reputationStore[key].rejected++;
+ saveReputation(reputationStore);
+}
+
+/* ---------- UTILITIES ---------- */
+
+function $(id){ return document.getElementById(id); }
+
+function uid(prefix){
+ return prefix + "-" + Date.now().toString().slice(-7) + Math.floor(Math.random()*90+10);
+}
+
+function escapeHTML(value){
+ if(value===null || value===undefined) return "";
+ return String(value)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+function fmtTime(iso){
+ try{
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return escapeHTML(iso||"—");
+  return d.toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
+ }catch(err){ return escapeHTML(iso||"—"); }
+}
+
+function timeAgo(iso){
+ const ms = Date.now() - new Date(iso).getTime();
+ if(isNaN(ms)) return "";
+ const h = ms/3600000;
+ if(h<1) return Math.max(1,Math.round(ms/60000))+" min ago";
+ if(h<48) return Math.round(h)+" hr ago";
+ return Math.round(h/24)+" days ago";
+}
+
+function haversineKm(lat1,lon1,lat2,lon2){
+ if([lat1,lon1,lat2,lon2].some(v=>v===null||v===undefined||isNaN(v))) return Infinity;
+ const R=6371, toRad=d=>d*Math.PI/180;
+ const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+ const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+ return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
+
+function jaccardSimilarity(textA, textB){
+ const setA = new Set((textA||"").toLowerCase().match(/[a-z]{3,}/g) || []);
+ const setB = new Set((textB||"").toLowerCase().match(/[a-z]{3,}/g) || []);
+ if(!setA.size || !setB.size) return 0;
+ let intersect=0;
+ setA.forEach(w=>{ if(setB.has(w)) intersect++; });
+ const union = new Set([...setA,...setB]).size;
+ return union ? intersect/union : 0;
+}
+
+let toastTimer=null;
+function toast(message, type){
+ const root=$("toastRoot");
+ if(!root) return;
+ const colors={error:"#d93025",warn:"#f57c00",success:"#159957"};
+ root.innerHTML = `<div class="toast" style="background:${colors[type]||"#09233f"}">${escapeHTML(message)}</div>`;
+ clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>{ root.innerHTML=""; },3400);
+}
+
+/* ---------- GEOCODING & GPS ---------- */
+
+async function geocode(city, state){
+ const key = (city||"").trim().toLowerCase();
+ if(!key) return null;
+ if(geoCache[key]) return geoCache[key];
+
+ try{
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=5&language=en&format=json`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("geocode http "+res.status);
+  const data = await res.json();
+  const results = data && data.results ? data.results : [];
+  let match = results.find(r=>r.country_code==="IN") || results[0];
+  if(!match) return null;
+  const coords = [match.latitude, match.longitude];
+  geoCache[key] = coords;
+  return coords;
+ }catch(err){
+  console.warn("Geocoding failed for", city, err);
+  return null;
+ }
+}
+
+/* Reverse geocode a GPS fix to city/state using a free, keyless
+   client API. Falls back gracefully — coordinates are still used
+   for weather verification even if this fails. */
+async function reverseGeocode(lat, lon){
+ try{
+  const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("reverse geocode http "+res.status);
+  const data = await res.json();
+  return {
+   city: data.city || data.locality || "",
+   state: data.principalSubdivision || ""
+  };
+ }catch(err){
+  console.warn("Reverse geocode failed", err);
+  return null;
+ }
+}
+
+/* ---------- WEATHER CROSS-CHECK ---------- */
+
+function weatherCodeMeaning(code){
+ if(code===0) return "clear sky";
+ if([1,2,3].includes(code)) return "partly cloudy";
+ if([45,48].includes(code)) return "fog";
+ if([51,53,55,56,57].includes(code)) return "drizzle";
+ if([61,63,65,66,67].includes(code)) return "rain";
+ if([71,73,75,77].includes(code)) return "snow";
+ if([80,81,82].includes(code)) return "rain showers";
+ if([95,96,99].includes(code)) return "thunderstorm";
+ return "unclassified conditions";
+}
+
+async function fetchWeatherNear(lat, lon, timeIso){
+ try{
+  const target = new Date(timeIso);
+  if(isNaN(target.getTime())) return null;
+
+  const diffDays = Math.abs((new Date() - target) / 86400000);
+  if(diffDays > 5) return { outOfWindow:true };
+
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
+   `&hourly=precipitation,windspeed_10m,temperature_2m,weathercode&past_days=5&forecast_days=2&timezone=auto`;
+
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("weather http "+res.status);
+  const data = await res.json();
+
+  const times = data.hourly && data.hourly.time;
+  if(!times || !times.length) return null;
+
+  let bestIdx=0, bestDiff=Infinity;
+  times.forEach((t,i)=>{
+   const diff = Math.abs(new Date(t).getTime() - target.getTime());
+   if(diff<bestDiff){ bestDiff=diff; bestIdx=i; }
+  });
+
+  return {
+   time: times[bestIdx],
+   precipitation: data.hourly.precipitation[bestIdx],
+   windspeed: data.hourly.windspeed_10m[bestIdx],
+   temperature: data.hourly.temperature_2m[bestIdx],
+   weathercode: data.hourly.weathercode[bestIdx]
+  };
+ }catch(err){
+  console.warn("Weather fetch failed", err);
+  return null;
+ }
+}
+
+function evaluateAgreement(event, w){
+ if(!w) return { agrees:null, reason:"Live weather data was unavailable for this check (offline, or outside the 5-day verification window)." };
+ if(w.outOfWindow) return { agrees:null, reason:"This report's date is outside the platform's automated verification window (±5 days), so it needs manual review." };
+
+ const precip = w.precipitation ?? 0;
+ const wind = w.windspeed ?? 0;
+ const temp = w.temperature ?? null;
+ const code = w.weathercode;
+ const cond = weatherCodeMeaning(code);
+ const ev = (event||"").toLowerCase();
+
+ if(ev.includes("rain") || ev.includes("flood")){
+  if(precip >= 1.5) return {agrees:true, reason:`Weather data recorded ${precip.toFixed(1)} mm of precipitation near the reported time, consistent with ${event.toLowerCase()}.`};
+  return {agrees:false, reason:`Weather data recorded only ${precip.toFixed(1)} mm of precipitation near the reported time — this does not support ${event.toLowerCase()}.`};
+ }
+ if(ev.includes("thunderstorm")){
+  if([95,96,99].includes(code) || precip>=2) return {agrees:true, reason:`Weather data shows ${cond} with ${precip.toFixed(1)} mm precipitation, consistent with a thunderstorm.`};
+  return {agrees:false, reason:`Weather data shows ${cond} with negligible precipitation, which conflicts with a reported thunderstorm.`};
+ }
+ if(ev.includes("heatwave")){
+  if(temp!==null && temp>=38) return {agrees:true, reason:`Recorded temperature was ${temp.toFixed(1)}°C, consistent with heatwave conditions.`};
+  return {agrees:false, reason: temp!==null ? `Recorded temperature was only ${temp.toFixed(1)}°C, which does not support a heatwave.` : "Temperature data unavailable for this check."};
+ }
+ if(ev.includes("fog")){
+  if([45,48].includes(code)) return {agrees:true, reason:"Weather data shows fog conditions at the reported time, consistent with this report."};
+  return {agrees:null, reason:`Weather data shows ${cond}. Fog cannot be fully confirmed from this free data source alone — treated as inconclusive rather than contradicted.`};
+ }
+ if(ev.includes("dust")){
+  if(wind>=25) return {agrees:true, reason:`Wind speed of ${wind.toFixed(0)} km/h is elevated, consistent with a dust event, though this data source cannot directly confirm dust/visibility.`};
+  return {agrees:null, reason:"Wind speed was not elevated. This free data source cannot directly confirm dust storms — treated as inconclusive."};
+ }
+ if(ev.includes("wind")){
+  if(wind>=30) return {agrees:true, reason:`Wind speed of ${wind.toFixed(0)} km/h supports a strong-wind report.`};
+  return {agrees:false, reason:`Wind speed was only ${wind.toFixed(0)} km/h, which does not support a strong-wind report.`};
+ }
+ return {agrees:null, reason:`No automated rule is defined for "${event}" yet — recorded conditions were ${cond}, ${precip.toFixed(1)} mm precipitation, ${wind.toFixed(0)} km/h wind. Needs manual review.`};
+}
+
+/* ---------- CORROBORATION / DUPLICATE CLUSTERING ---------- */
+
+function corroborationCheck(report, allReports){
+ let corroboration=0, contradiction=0;
+ let bestDuplicate = null, bestSimilarity = 0;
+
+ allReports.forEach(other=>{
+  if(other.id===report.id) return;
+
+  const distKm = haversineKm(report.lat, report.lon, other.lat, other.lon);
+  const sameCityFallback = (!isFinite(distKm)) && (other.city||"").toLowerCase()===(report.city||"").toLowerCase();
+  const hoursApart = Math.abs(new Date(report.time)-new Date(other.time))/3600000;
+  if(isNaN(hoursApart)) return;
+
+  const nearby = distKm<=25 || sameCityFallback;
+  const sameWindow = hoursApart<=3;
+
+  if(nearby && sameWindow){
+   if(other.event===report.event) corroboration++;
+   else contradiction++;
+  }
+
+  /* Duplicate clustering: close in space+time AND similar text
+     -> likely the same real-world event reported twice. */
+  const veryClose = distKm<=8 && hoursApart<=2;
+  const similarity = jaccardSimilarity(report.description, other.description);
+
+  if(veryClose && other.event===report.event && similarity >= 0.2){
+   if(similarity > bestSimilarity){ bestSimilarity = similarity; bestDuplicate = other; }
+  }
+ });
+
+ return { corroboration, contradiction, duplicate: bestDuplicate, similarity: bestSimilarity };
+}
+
+/* ---------- FAKE / MISLEADING DETECTION ----------
+   Produces a list of human-readable flags plus a trust penalty.
+   This is the "identify fake or misleading reports" requirement,
+   implemented as auditable rules rather than a black box. */
+
+function detectCredibilityFlags(report, classification, cross, reputation){
+ const flags = [];
+ let penalty = 0;
+
+ if((report.description||"").trim().length < 15){
+  flags.push("Description is very short / lacks detail");
+  penalty += 8;
+ }
+
+ if(classification.hasSignal && classification.predicted && classification.predicted !== report.event){
+  flags.push(`Description text reads more like "${classification.predicted}" than the selected "${report.event}"`);
+  penalty += 12;
+ } else if(!classification.hasSignal){
+  flags.push("Description text contains no clear weather-event keywords");
+  penalty += 5;
+ }
+
+ if(!report.mobile && report.origin==="citizen"){
+  flags.push("No mobile number on file (lower accountability)");
+  penalty += 5;
+ }
+
+ if(cross.contradiction>0){
+  flags.push("Conflicts with a nearby report of a different event type");
+  penalty += 10*Math.min(cross.contradiction,2);
+ }
+
+ if(cross.duplicate){
+  flags.push(`High text similarity (${Math.round(cross.similarity*100)}%) with report ${cross.duplicate.id} — likely duplicate`);
+  penalty += 15;
+ }
+
+ if(reputation.tier==="low"){
+  flags.push("Reporter has a low historical reliability score");
+  penalty += 12;
+ }
+
+ if(report.origin==="simulated"){
+  flags.push("Simulated source — see Platform Architecture");
+  penalty += 8;
+ }
+
+ return { flags, penalty };
+}
+
+/* ---------- MAIN VERIFICATION ORCHESTRATOR ---------- */
+
+async function runVerification(report, allReports){
+ let lat=report.lat, lon=report.lon;
+
+ if((lat===null||lat===undefined) && report.city){
+  const coords = await geocode(report.city, report.state);
+  if(coords){ lat=coords[0]; lon=coords[1]; report.lat=lat; report.lon=lon; }
+ }
+
+ let weatherPoint=null, agreement={agrees:null, reason:"Location could not be resolved to coordinates, so live weather data could not be checked."};
+ if(lat!==null && lat!==undefined){
+  weatherPoint = await fetchWeatherNear(lat, lon, report.time);
+  agreement = evaluateAgreement(report.event, weatherPoint);
+ }
+
+ const classification = classifyText(report.description);
+ const cross = corroborationCheck(report, allReports);
+ const reputation = getReputation(reporterKey(report));
+ const credibility = detectCredibilityFlags(report, classification, cross, reputation);
+
+ let trust = 50;
+ if(agreement.agrees===true) trust += 28;
+ else if(agreement.agrees===false) trust -= 26;
+ trust += Math.min(cross.corroboration,3)*7;
+ trust -= Math.min(cross.contradiction,3)*9;
+ trust += Math.round((reputation.score-50)/4);
+ trust -= credibility.penalty;
+ trust = Math.round(clamp(trust,3,98));
+
+ const duplicateRisk = cross.duplicate ? Math.round(cross.similarity*100) : 0;
+
+ const summary = agreement.reason +
+  (cross.corroboration ? ` Corroborated by ${cross.corroboration} nearby report(s) of the same event.` : "") +
+  (cross.contradiction ? ` Conflicts with ${cross.contradiction} nearby report(s) of a different event.` : "") +
+  (cross.duplicate ? ` Likely duplicate of ${cross.duplicate.id}.` : "");
+
+ /* Sub-scores shown individually to the admin — see app1b.js.
+    "AI-assisted" signals, never presented as certain truth. */
+ const eventClassConfidence = classification.hasSignal ? classification.confidence : 0;
+ const evidenceCompleteness = evidenceCompletenessScore(report);
+ const crossSourceAgreement = crossSourceAgreementScore(cross);
+
+ return {
+  checked:true,
+  agrees:agreement.agrees,
+  corroboration:cross.corroboration,
+  contradiction:cross.contradiction,
+  duplicateRisk,
+  duplicateOf: cross.duplicate ? cross.duplicate.id : null,
+  categoryMatch: !classification.hasSignal ? null : classification.predicted===report.event,
+  predictedCategory: classification.predicted,
+  categoryConfidence: classification.confidence,
+  eventClassConfidence, evidenceCompleteness, crossSourceAgreement,
+  reputationScore: reputation.score,
+  reputationTier: reputation.tier,
+  flags: credibility.flags,
+  trust,
+  summary
+ };
+}
+/* =========================================================
+   EXTENSIONS — confidence sub-scores, notifications,
+   audit trail, custom alerts, feedback
+   ========================================================= */
+
+const NOTIF_KEY = "codemate_notifications_v3";
+const ALERTS_KEY = "codemate_custom_alerts_v3";
+
+let notifications = loadNotifications();
+let customAlerts = loadCustomAlerts();
+
+function loadNotifications(){
+ try{ const raw=JSON.parse(localStorage.getItem(NOTIF_KEY)||"null"); if(Array.isArray(raw)) return raw; }catch(e){}
+ return [];
+}
+function saveNotifications(){ try{ localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications)); }catch(e){} }
+
+function pushNotification(text, kind){
+ notifications.unshift({ id:uid("NTF"), text, kind:kind||"info", time:new Date().toISOString(), read:false });
+ notifications = notifications.slice(0,40);
+ saveNotifications();
+ updateNotifBadge();
+}
+
+function updateNotifBadge(){
+ const badge = $("notifBadge");
+ if(!badge) return;
+ const unread = notifications.filter(n=>!n.read).length;
+ badge.textContent = unread;
+ badge.style.display = unread ? "flex" : "none";
+}
+
+function loadCustomAlerts(){
+ try{ const raw=JSON.parse(localStorage.getItem(ALERTS_KEY)||"null"); if(Array.isArray(raw)) return raw; }catch(e){}
+ return [
+  { id:uid("ALT"), title:"Heavy Rainfall Advisory — Western Maharashtra", severity:"High",
+    area:"Pune, Mumbai, Nashik", event:"Heavy Rainfall", active:true,
+    text:"Sustained heavy rainfall expected. Avoid waterlogged roads and low-lying areas.", time:isoHoursAgo(4) }
+ ];
+}
+function saveCustomAlerts(){ try{ localStorage.setItem(ALERTS_KEY, JSON.stringify(customAlerts)); }catch(e){} }
+
+/* ---------- AUDIT TRAIL ---------- */
+
+function addAudit(report, text){
+ if(!report.auditTrail) report.auditTrail = [];
+ report.auditTrail.push({ time:new Date().toISOString(), text });
+}
+
+/* ---------- CONFIDENCE SUB-SCORES ----------
+   Breaks the single trust number into the three signals asked
+   for: event classification confidence, evidence completeness,
+   and cross-source agreement — each independently computed and
+   shown to the admin, not just a black-box overall number. */
+
+function evidenceCompletenessScore(report){
+ let score = 30; /* base: a description always exists */
+ if((report.description||"").length >= 40) score += 20;
+ if((report.description||"").length >= 100) score += 10;
+ if(report.mobile) score += 15;
+ if(report.landmark) score += 10;
+ if((report.media||[]).length) score += 15;
+ return clamp(score, 5, 98);
+}
+
+function crossSourceAgreementScore(cross){
+ let score = 50 + cross.corroboration*15 - cross.contradiction*20;
+ return clamp(Math.round(score), 5, 98);
+}
+
+/* ---------- REVERSE-GEOCODE-ASSISTED GPS FLOW (used by the form) ---------- */
+
+function getBrowserLocation(){
+ return new Promise((resolve,reject)=>{
+  if(!navigator.geolocation){ reject(new Error("Geolocation not supported by this browser.")); return; }
+  navigator.geolocation.getCurrentPosition(
+   pos => resolve({lat:pos.coords.latitude, lon:pos.coords.longitude}),
+   err => reject(err),
+   { enableHighAccuracy:true, timeout:10000 }
+  );
+ });
+}
+
+/* ---------- CAP v1.2 ALERT XML EXPORT (real, downloadable) ---------- */
+
+function generateCapXML(report){
+ const now = new Date().toISOString();
+ const severityMap = { "Critical":"Extreme", "High":"Severe", "Medium":"Moderate", "Low":"Minor" };
+
+ return `<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>${escapeHTML(report.id)}</identifier>
+  <sender>codemate-prototype@sih26069.demo</sender>
+  <sent>${now}</sent>
+  <status>Exercise</status>
+  <msgType>Alert</msgType>
+  <scope>Public</scope>
+  <info>
+    <category>Met</category>
+    <event>${escapeHTML(report.event)}</event>
+    <urgency>Expected</urgency>
+    <severity>${severityMap[report.severity]||"Unknown"}</severity>
+    <certainty>${report.verification?.agrees ? "Likely" : "Possible"}</certainty>
+    <headline>${escapeHTML(report.event)} reported in ${escapeHTML(report.city)}, ${escapeHTML(report.state)}</headline>
+    <description>${escapeHTML(report.description)}</description>
+    <area>
+      <areaDesc>${escapeHTML(report.city)}, ${escapeHTML(report.state)}</areaDesc>
+      ${report.lat ? `<circle>${report.lat},${report.lon} 25</circle>` : ""}
+    </area>
+  </info>
+</alert>`;
+}
+
+function downloadCapXML(id){
+ const report = reports.find(r=>r.id===id);
+ if(!report) return;
+ const xml = generateCapXML(report);
+ const blob = new Blob([xml], {type:"application/xml"});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement("a");
+ a.href = url; a.download = `CAP-${report.id}.xml`;
+ document.body.appendChild(a); a.click(); document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ addAudit(report, "Admin exported CAP alert XML.");
+ saveReports();
+ toast("CAP alert XML downloaded.","success");
+}
+/* ---------- ROLE / NAV ---------- */
+
+function enterRole(role){
+ currentRole = role;
+ localStorage.setItem(ROLE_KEY, role);
+
+ $("loginScreen").classList.add("hidden");
+ $("app").classList.remove("hidden");
+
+ $("userRoleBtn").classList.toggle("active", role==="user");
+ $("adminRoleBtn").classList.toggle("active", role==="admin");
+
+ $("switchRoleNav").innerHTML = role==="user"
+  ? "🔄 Switch to Government Admin"
+  : "🔄 Switch to Citizen User";
+
+ closeMenu();
+ go("overview");
+ toast(role==="user" ? "Citizen mode activated." : "Government Admin mode activated.", "success");
+}
+
+function switchRole(){ enterRole(currentRole==="user" ? "admin" : "user"); }
+
+function logout(){
+ currentRole="";
+ localStorage.removeItem(ROLE_KEY);
+ $("app").classList.add("hidden");
+ $("loginScreen").classList.remove("hidden");
+ toast("Exited the platform.");
+}
+
+function toggleMenu(){ $("sidebar").classList.toggle("open"); }
+function closeMenu(){ $("sidebar").classList.remove("open"); }
+
+function go(page){
+ currentPage = page;
+
+ document.querySelectorAll(".navItem[data-page]").forEach(btn=>{
+  btn.classList.toggle("active", btn.dataset.page===page);
+ });
+
+ closeMenu();
+
+ const renderers = {
+  overview: overviewPage, map: mapPage, reports: reportsPage, ingestion: ingestionPage,
+  analytics: analyticsPage, reputation: reputationPage, architecture: architecturePage,
+  report: reportFormPage, myreports: myReportsPage, alerts: alertsPage, health: healthPage,
+  hotspots: hotspotsPage, sources: sourcesPage, emergency: emergencyPage
+ };
+
+ $("main").innerHTML = (renderers[page] || overviewPage)();
+ window.scrollTo({top:0, behavior:"smooth"});
+ afterRender(page);
+}
+
+function afterRender(page){
+ if(page==="overview") setTimeout(renderOverviewCharts,50);
+ if(page==="analytics") setTimeout(renderAnalyticsCharts,50);
+ if(page==="map") setTimeout(initLeafletMap,60);
+ if(page==="report") setTimeout(setupReportForm,50);
+}
+
+/* ---------- EVENT CLUSTERS (dedup view) ---------- */
+
+function computeClusters(){
+ const clusters = [];
+ const used = new Set();
+
+ reports.forEach(r=>{
+  if(used.has(r.id)) return;
+  const members = [r];
+  used.add(r.id);
+
+  reports.forEach(other=>{
+   if(used.has(other.id)) return;
+   const distKm = haversineKm(r.lat,r.lon,other.lat,other.lon);
+   const hoursApart = Math.abs(new Date(r.time)-new Date(other.time))/3600000;
+   const sim = jaccardSimilarity(r.description, other.description);
+   if(distKm<=8 && hoursApart<=3 && other.event===r.event && sim>=0.15){
+    members.push(other);
+    used.add(other.id);
+   }
+  });
+
+  clusters.push({
+   id: "CLU-"+r.id,
+   event: r.event, city: r.city, state: r.state,
+   members,
+   maxTrust: Math.max(...members.map(m=>m.verification?.trust||0)),
+   anyVerified: members.some(m=>m.status==="Verified")
+  });
+ });
+
+ return clusters;
+}
+
+/* ---------- OVERVIEW ---------- */
+
+function overviewPage(){
+ const total = reports.length;
+ const verified = reports.filter(r=>r.status==="Verified").length;
+ const review = reports.filter(r=>r.status==="Needs Review" || r.status==="Pending Verification").length;
+ const avgTrust = reports.length ? Math.round(reports.reduce((s,r)=>s+(r.verification?.trust||0),0)/reports.length) : 0;
+ const clusters = computeClusters();
+ const flaggedCount = reports.filter(r=>(r.verification?.flags||[]).length>=2).length;
+
+ return `
+ <div class="pageHeader">
+  <div>
+   <h1>National Overview</h1>
+   <p>Live snapshot of multi-source weather reports across India, cross-checked against real weather data and deduplicated into event clusters.</p>
+  </div>
+  <span class="badge blue">SIH26069 · MoES / IMD</span>
+ </div>
+
+ <div class="grid kpiGrid">
+  <div class="card kpi"><div class="kpiIcon">📥</div><div class="kpiLabel">RAW REPORTS</div><div class="kpiValue">${total}</div><div class="kpiFoot">Across all sources</div></div>
+  <div class="card kpi"><div class="kpiIcon">🧬</div><div class="kpiLabel">DEDUPLICATED EVENTS</div><div class="kpiValue">${clusters.length}</div><div class="kpiFoot">After clustering near-duplicates</div></div>
+  <div class="card kpi"><div class="kpiIcon">✅</div><div class="kpiLabel">VERIFIED</div><div class="kpiValue">${verified}</div><div class="kpiFoot">Confirmed by engine + admin</div></div>
+  <div class="card kpi"><div class="kpiIcon">🚩</div><div class="kpiLabel">FLAGGED FOR REVIEW</div><div class="kpiValue">${flaggedCount}</div><div class="kpiFoot">2+ credibility flags raised</div></div>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">
+   Verification &amp; Deduplication Pipeline
+   ${currentRole==="admin" ? `<button class="actionBtn primary" onclick="go('ingestion')">📡 Live Ingestion Demo →</button>` : ""}
+  </div>
+  <div class="pipeline">
+   <div class="pipe"><span class="pipeIcon">📡</span>Ingested<span class="pipeCount">${total}</span></div>
+   <div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🧬</span>Deduplicated<span class="pipeCount">${clusters.length}</span></div>
+   <div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">📍</span>Geocoded<span class="pipeCount">${reports.filter(r=>r.lat).length}</span></div>
+   <div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🏷️</span>Auto-Categorized<span class="pipeCount">${reports.filter(r=>r.verification?.predictedCategory).length}</span></div>
+   <div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🌦️</span>Weather-Checked<span class="pipeCount">${reports.filter(r=>r.verification?.checked).length}</span></div>
+   <div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🛂</span>Admin Review<span class="pipeCount">${review}</span></div>
+  </div>
+ </div>
+
+ <div class="chartGrid" style="margin-top:15px">
+  <div class="card"><div class="sectionTitle">Reports by Event Type</div><div class="chartBox"><canvas id="eventChart"></canvas></div></div>
+  <div class="card"><div class="sectionTitle">Report Source Mix</div><div class="chartBox"><canvas id="sourceChart"></canvas></div></div>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">Most Recent Reports <button class="actionBtn primary" onclick="go('reports')">View all →</button></div>
+  ${reportTableHTML(reports.slice(0,5))}
+ </div>`;
+}
+
+function countBy(key){
+ const result={};
+ reports.forEach(r=>{ const value=r[key]||"Unknown"; result[value]=(result[value]||0)+1; });
+ return result;
+}
+
+function destroyChart(name){ if(charts[name]){ charts[name].destroy(); charts[name]=null; } }
+
+function renderOverviewCharts(){
+ destroyChart("event");
+ const ec=$("eventChart");
+ if(ec){
+  const events=countBy("event");
+  charts.event=new Chart(ec,{type:"bar",
+   data:{labels:Object.keys(events), datasets:[{label:"Reports",data:Object.values(events),backgroundColor:"#1976d2",borderRadius:6}]},
+   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+ }
+
+ destroyChart("source");
+ const sc=$("sourceChart");
+ if(sc){
+  const sources={};
+  reports.forEach(r=>{ sources[r.channel||"Citizen App"]=(sources[r.channel||"Citizen App"]||0)+1; });
+  charts.source=new Chart(sc,{type:"doughnut",
+   data:{labels:Object.keys(sources), datasets:[{data:Object.values(sources),backgroundColor:["#1976d2","#f4b400","#159957","#7950f2","#f57c00"]}]},
+   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}});
+ }
+}
+
+/* ---------- REPORT TABLE (shared) ---------- */
+
+function trustColor(t){ return t>=75 ? "#159957" : t>=50 ? "#f4b400" : "#d93025"; }
+
+function reportTableHTML(data){
+ if(!data.length) return `<div class="empty"><div class="big">📭</div>No reports match the current filters.</div>`;
+
+ return `
+ <div class="tableWrap">
+  <table>
+   <thead><tr><th>ID</th><th>Source</th><th>Location</th><th>Event</th><th>Trust</th><th>Reporter</th><th>Status</th><th>Reported</th><th></th></tr></thead>
+   <tbody>
+    ${data.map(r=>{
+     const v=r.verification||{};
+     return `
+     <tr class="rowlink" onclick="inspect('${r.id}')">
+      <td><strong>${escapeHTML(r.id)}</strong>${v.duplicateOf?`<div class="clusterBadge" style="margin-top:3px">⧉ dup of ${escapeHTML(v.duplicateOf)}</div>`:""}</td>
+      <td>${originBadge(r)}</td>
+      <td>${escapeHTML(r.city)}${r.state?", "+escapeHTML(r.state):""}</td>
+      <td>${escapeHTML(r.event)}${v.categoryMatch===false?` <span title="Text suggests ${escapeHTML(v.predictedCategory||'a different category')}">⚠️</span>`:""}</td>
+      <td><span class="trustBar"><div style="width:${v.trust||0}%;background:${trustColor(v.trust||0)}"></div></span>${v.trust ?? "—"}</td>
+      <td>${reputationBadge(v.reputationTier)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${timeAgo(r.time)}</td>
+      <td><button class="actionBtn primary" onclick="event.stopPropagation();inspect('${r.id}')">Inspect</button></td>
+     </tr>`;
+    }).join("")}
+   </tbody>
+  </table>
+ </div>`;
+}
+
+function originBadge(r){
+ return r.origin==="simulated"
+  ? `<span class="sourceTag sim" title="Simulated ${escapeHTML(r.channel||'')} signal — see Platform Architecture">${escapeHTML(r.channel||'SIMULATED')}</span>`
+  : `<span class="sourceTag real" title="Real citizen submission stored in this browser">CITIZEN</span>`;
+}
+
+function reputationBadge(tier){
+ const map={high:["✓ High","high"],mid:["~ Mid","mid"],low:["! Low","low"],new:["New","new"]};
+ const [label,cls]=map[tier]||map.new;
+ return `<span class="repBadge ${cls}">${label}</span>`;
+}
+
+function statusBadge(s){
+ const map={"Verified":"green","Needs Review":"orange","Rejected":"red","Pending Verification":"blue"};
+ return `<span class="badge ${map[s]||"gray"}">${escapeHTML(s)}</span>`;
+}
+
+function severityBadge(s){
+ const map={"Critical":"red","High":"orange","Medium":"gold","Low":"blue"};
+ return `<span class="badge ${map[s]||"gray"}">${escapeHTML(s)}</span>`;
+}
+
+/* ---------- LIVE MAP ---------- */
+
+function mapPage(){
+ return `
+ <div class="pageHeader">
+  <div><h1>Live Weather Map</h1><p>Illustrative map (not to exact geographic scale) — pin position is computed from each report's real coordinates.</p></div>
+  <span class="badge purple">${reports.filter(r=>r.lat).length} geolocated</span>
+ </div>
+
+ <div class="card mapCard">
+  <div class="mapToolbar">
+   <button class="filterBtn map-filter active" onclick="filterMap('all',this)">All</button>
+   <button class="filterBtn map-filter" onclick="filterMap('Critical',this)">Critical</button>
+   <button class="filterBtn map-filter" onclick="filterMap('High',this)">High</button>
+   <button class="filterBtn map-filter" onclick="filterMap('Verified',this)">Verified only</button>
+   <button class="filterBtn map-filter" onclick="filterMap('Citizen',this)">Citizen only</button>
+  </div>
+
+  <div class="mapLayout">
+   <div class="mapCanvasWrap" id="mapCanvasWrap">
+    <div class="mapCaption">INDIA · APPROX. POSITIONS FROM REPORT COORDINATES</div>
+    <div id="mapOverlay" style="position:absolute;inset:0"></div>
+    <div class="mapLegend">
+     <div class="legendRow"><span class="legendDot" style="background:#d93025"></span>Critical</div>
+     <div class="legendRow"><span class="legendDot" style="background:#f57c00"></span>High</div>
+     <div class="legendRow"><span class="legendDot" style="background:#159957"></span>Verified</div>
+     <div class="legendRow"><span class="legendDot" style="background:#1976d2"></span>Other</div>
+    </div>
+   </div>
+
+   <div class="mapSidepanel">
+    <div class="card mapInfo" id="mapInfo">
+     <div class="sectionTitle">Selected Report</div>
+     <div class="empty">Click a pin to see report details here.</div>
+    </div>
+   </div>
+  </div>
+ </div>`;
+}
+
+function renderMapMarkers(filter){
+ mapFilterState = filter;
+ const overlay = $("mapOverlay");
+ if(!overlay) return;
+ overlay.innerHTML = "";
+
+ let data = reports.filter(r=>r.lat!==null && r.lat!==undefined);
+ if(filter==="Verified") data = data.filter(r=>r.status==="Verified");
+ else if(filter==="Citizen") data = data.filter(r=>r.origin!=="simulated");
+ else if(filter!=="all") data = data.filter(r=>r.severity===filter);
+
+ data.forEach(r=>{
+  const [x,y] = latLonToPercent(r.lat, r.lon);
+  const point = document.createElement("div");
+  let color = r.severity==="Critical" ? "red" : r.severity==="High" ? "orange" : r.status==="Verified" ? "green" : "blue";
+  point.className = "mapPoint "+color;
+  point.style.left = x+"%"; point.style.top = y+"%";
+  point.title = `${r.city} • ${r.event}`;
+  point.onclick = ()=>showMapInfo(r.id);
+  overlay.appendChild(point);
+ });
+}
+
+function filterMap(filter, btn){
+ document.querySelectorAll(".map-filter").forEach(b=>b.classList.remove("active"));
+ if(btn) btn.classList.add("active");
+ renderMapMarkers(filter);
+}
+
+function showMapInfo(id){
+ const r = reports.find(x=>x.id===id);
+ const box = $("mapInfo");
+ if(!r || !box) return;
+ box.innerHTML = `
+  <div class="sectionTitle">${escapeHTML(r.city)}, ${escapeHTML(r.state)}</div>
+  <div class="infoRow"><div class="infoLabel">Event</div><div class="infoValue">${escapeHTML(r.event)} ${severityBadge(r.severity)}</div></div>
+  <div class="infoRow"><div class="infoLabel">Reported</div><div class="infoValue">${fmtTime(r.time)}</div></div>
+  <div class="infoRow"><div class="infoLabel">Status</div><div class="infoValue">${statusBadge(r.status)}</div></div>
+  <div class="infoRow"><div class="infoLabel">Trust Score</div><div class="infoValue">${r.verification?.trust ?? "—"}/100</div></div>
+  <button class="actionBtn primary" style="width:100%;margin-top:6px" onclick="inspect('${r.id}')">Open Full Report</button>`;
+}
+
+/* ---------- INCOMING REPORTS (rich admin filters) ---------- */
+
+function reportsPage(){
+ const states = [...new Set(reports.map(r=>r.state).filter(Boolean))].sort();
+
+ return `
+ <div class="pageHeader">
+  <div><h1>Incoming Reports</h1><p>All reports across every source, with live verification status. Filters match the requested date / event / location / status views.</p></div>
+  ${currentRole==="admin" ? `<span class="badge gold">ADMIN VIEW</span>` : `<span class="badge blue">READ-ONLY</span>`}
+ </div>
+
+ <div class="card" style="margin-bottom:15px">
+  <div class="filtersBar">
+   <div class="fgroup"><label>Search</label><input id="fSearch" placeholder="City, event, ID..." oninput="filterReports()"></div>
+   <div class="fgroup"><label>From date</label><input id="fFrom" type="date" onchange="filterReports()"></div>
+   <div class="fgroup"><label>To date</label><input id="fTo" type="date" onchange="filterReports()"></div>
+   <div class="fgroup"><label>Event</label>
+    <select id="fEvent" onchange="filterReports()">
+     <option value="">All events</option>
+     ${EVENT_CATEGORIES.map(c=>`<option>${c}</option>`).join("")}
+    </select>
+   </div>
+   <div class="fgroup"><label>State</label>
+    <select id="fState" onchange="filterReports()">
+     <option value="">All states</option>
+     ${states.map(s=>`<option>${escapeHTML(s)}</option>`).join("")}
+    </select>
+   </div>
+   <div class="fgroup"><label>Status</label>
+    <select id="fStatus" onchange="filterReports()">
+     <option value="">All statuses</option>
+     <option>Verified</option><option>Pending Verification</option><option>Needs Review</option><option>Rejected</option>
+    </select>
+   </div>
+   <div class="fgroup"><label>Source</label>
+    <select id="fOrigin" onchange="filterReports()">
+     <option value="">All sources</option>
+     <option value="citizen">Citizen only</option>
+     <option value="simulated">Simulated only</option>
+    </select>
+   </div>
+  </div>
+ </div>
+
+ <div class="card" id="reportTableCard">${reportTableHTML(reports)}</div>`;
+}
+
+function filterReports(){
+ const q = ($("fSearch")?.value || "").toLowerCase();
+ const from = $("fFrom")?.value;
+ const to = $("fTo")?.value;
+ const event = $("fEvent")?.value;
+ const state = $("fState")?.value;
+ const status = $("fStatus")?.value;
+ const origin = $("fOrigin")?.value;
+
+ const data = reports.filter(r=>{
+  const hay = `${r.id} ${r.city} ${r.state} ${r.event}`.toLowerCase();
+  if(q && !hay.includes(q)) return false;
+  if(event && r.event!==event) return false;
+  if(state && r.state!==state) return false;
+  if(status && r.status!==status) return false;
+  if(origin==="citizen" && r.origin==="simulated") return false;
+  if(origin==="simulated" && r.origin!=="simulated") return false;
+  if(from && new Date(r.time) < new Date(from)) return false;
+  if(to && new Date(r.time) > new Date(to+"T23:59:59")) return false;
+  return true;
+ });
+
+ $("reportTableCard").innerHTML = reportTableHTML(data);
+}
+
+/* ---------- ANALYTICS ---------- */
+
+function analyticsPage(){
+ const verified = reports.filter(r=>r.status==="Verified").length;
+ const rejected = reports.filter(r=>r.status==="Rejected").length;
+ const clusters = computeClusters();
+ const dedupRate = reports.length ? Math.round((1 - clusters.length/reports.length)*100) : 0;
+
+ return `
+ <div class="pageHeader"><div><h1>Weather Analytics</h1><p>Interactive summary of the current prototype dataset.</p></div></div>
+
+ <div class="chartGrid">
+  <div class="card"><div class="sectionTitle">Reports by City</div><div class="chartBox"><canvas id="cityChart"></canvas></div></div>
+  <div class="card"><div class="sectionTitle">Verification Status</div><div class="chartBox"><canvas id="statusChart"></canvas></div></div>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">Key Indicators</div>
+  <div class="grid kpiGrid">
+   <div class="card kpi"><div class="kpiLabel">VERIFIED</div><div class="kpiValue">${verified}</div></div>
+   <div class="card kpi"><div class="kpiLabel">REJECTED</div><div class="kpiValue">${rejected}</div></div>
+   <div class="card kpi"><div class="kpiLabel">DEDUP RATE</div><div class="kpiValue">${dedupRate}%</div></div>
+   <div class="card kpi"><div class="kpiLabel">EVENT TYPES SEEN</div><div class="kpiValue">${Object.keys(countBy("event")).length}</div></div>
+  </div>
+ </div>`;
+}
+
+function renderAnalyticsCharts(){
+ destroyChart("city"); destroyChart("status");
+
+ const cityCanvas=$("cityChart");
+ if(cityCanvas){
+  const sorted = Object.entries(countBy("city")).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  charts.city=new Chart(cityCanvas,{type:"bar",
+   data:{labels:sorted.map(e=>e[0]), datasets:[{label:"Reports",data:sorted.map(e=>e[1]),backgroundColor:"#1976d2",borderRadius:6}]},
+   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});
+ }
+
+ const statusCanvas=$("statusChart");
+ if(statusCanvas){
+  const statuses = countBy("status");
+  const palette={"Verified":"#159957","Pending Verification":"#1976d2","Needs Review":"#f4b400","Rejected":"#d93025"};
+  charts.status=new Chart(statusCanvas,{type:"doughnut",
+   data:{labels:Object.keys(statuses), datasets:[{data:Object.values(statuses),backgroundColor:Object.keys(statuses).map(k=>palette[k]||"#6b7c8d")}]},
+   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}});
+ }
+}
+
+/* ---------- REPORTER REPUTATION PAGE ---------- */
+
+function reputationPage(){
+ const keys = Object.keys(reputationStore);
+
+ const rows = keys.map(key=>{
+  const rep = getReputation(key);
+  const label = key.startsWith("m:") ? "Mobile ending " + key.slice(-4) : key.slice(2);
+  return { label, ...rep };
+ }).sort((a,b)=>b.score-a.score);
+
+ return `
+ <div class="pageHeader">
+  <div><h1>Reporter Reputation</h1><p>Tracks each named/verified reporter across submissions — this is how the platform "verifies untrusted sources" over time, not just per report.</p></div>
+ </div>
+
+ <div class="note" style="margin-bottom:15px">
+  Anonymous reports (no name or mobile given) intentionally don't build a reputation record —
+  they're still verified individually via weather cross-check and corroboration, just without a track record.
+ </div>
+
+ <div class="card">
+  ${rows.length ? `
+  <div class="tableWrap">
+   <table>
+    <thead><tr><th>Reporter</th><th>Submitted</th><th>Verified</th><th>Rejected</th><th>Reliability</th></tr></thead>
+    <tbody>
+     ${rows.map(r=>`
+      <tr>
+       <td><strong>${escapeHTML(r.label)}</strong></td>
+       <td>${r.submitted}</td>
+       <td style="color:#087a43">${r.verified}</td>
+       <td style="color:#b42318">${r.rejected}</td>
+       <td><span class="trustBar"><div style="width:${r.score}%;background:${trustColor(r.score)}"></div></span>${r.score}/100 ${reputationBadge(r.tier)}</td>
+      </tr>`).join("")}
+    </tbody>
+   </table>
+  </div>` : `<div class="empty"><div class="big">🧾</div>No named reporters yet — submit a report with your name or mobile number to build a reputation record.</div>`}
+ </div>`;
+}
+
+/* ---------- PLATFORM ARCHITECTURE (honesty + scaling plan) ---------- */
+
+function architecturePage(){
+ const sample = reports.filter(r=>r.status==="Verified").slice(0,2).map(r=>({
+  id:r.id, event:r.event, city:r.city, state:r.state,
+  severity:r.severity, status:r.status, trust:r.verification?.trust,
+  time:r.time, lat:r.lat, lon:r.lon
+ }));
+
+ return `
+ <div class="pageHeader"><div><h1>Platform Architecture</h1><p>What's real in this browser prototype, what's simulated, and how it scales to the full SIH26069 platform.</p></div></div>
+
+ <div class="card">
+  <div class="sectionTitle">Production Data Pipeline (proposed)</div>
+  <div class="archRow">
+   <div class="archBox">Ingestion Connectors<small>X/Twitter API, RSS, IMD bulletins, Citizen App, public datasets</small></div>
+   <div class="archArrow">→</div>
+   <div class="archBox">Message Queue<small>Apache Kafka topic per source</small></div>
+   <div class="archArrow">→</div>
+   <div class="archBox">Stream Processing<small>Spark Structured Streaming — dedup, NLP categorization, fake-detection model</small></div>
+   <div class="archArrow">→</div>
+   <div class="archBox">Storage<small>PostGIS (geo) + Elasticsearch (search/analytics)</small></div>
+   <div class="archArrow">→</div>
+   <div class="archBox">This Dashboard<small>Admin panel + public visualization</small></div>
+   <div class="archArrow">→</div>
+   <div class="archBox">Alert Distribution<small>CAP XML → IMD / NDMA channels</small></div>
+  </div>
+  <p style="font-size:12px;color:var(--muted)">This prototype demonstrates the logic of every stage in-browser (dedup, categorization, verification, alerting) without requiring Kafka/Spark infrastructure to run a hackathon demo — the algorithms are real, the infrastructure they'd run on at national scale is described here rather than deployed.</p>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">What's real vs. simulated in this prototype</div>
+  <div class="note" style="margin-bottom:10px">
+   <strong>Real, running now:</strong> city/GPS geocoding, live weather cross-verification (Open-Meteo),
+   text-based event auto-categorization, duplicate/near-duplicate clustering, reporter reputation
+   tracking, and CAP alert XML generation. Try submitting a report and inspecting it.
+  </div>
+  <div class="note warn">
+   <strong>Simulated, clearly labelled:</strong> live ingestion from social media platforms tagged #IMD.
+   Bulk programmatic scraping of X/Instagram/Facebook is restricted by their terms of service or requires
+   paid enterprise API access, so a static client-side demo cannot legally do this live. The
+   <strong>Live Ingestion</strong> page demonstrates synthetic but realistic items moving through the
+   exact same verification pipeline used for real citizen reports — the ingestion source is mocked,
+   the processing logic is not.
+  </div>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">Sample API Contract</div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Proposed REST endpoint a production backend would expose — this is the contract the dashboard is designed against.</p>
+  <div class="apiBlock">
+<span class="k">GET</span> /api/v1/events<span class="s">?event=Flooding&amp;state=Maharashtra&amp;status=Verified&amp;from=2026-09-18</span>
+
+<span class="c">// 200 OK</span>
+{
+  "count": ${sample.length},
+  "results": ${JSON.stringify(sample, null, 2).split("\n").join("\n  ")}
+}
+  </div>
+ </div>`;
+}
+/* =========================================================
+   REAL LEAFLET + OPENSTREETMAP (overrides the earlier
+   illustrative map — no fake rectangular India diagram)
+   ========================================================= */
+
+let leafletMap = null;
+let leafletMarkers = [];
+let leafletFilter = "all";
+
+function mapPage(){
+ return `
+ <div class="pageHeader">
+  <div><h1>Live Weather Map</h1><p>Real interactive map (Leaflet + OpenStreetMap) — pins use each report's actual coordinates.</p></div>
+  <span class="badge purple">${reports.filter(r=>r.lat).length} geolocated</span>
+ </div>
+
+ <div class="card mapCard">
+  <div class="mapToolbar">
+   <button class="filterBtn leaf-filter active" onclick="filterLeaflet('all',this)">All</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Heavy Rainfall',this)">Heavy Rainfall</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Flooding',this)">Flooding</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Thunderstorm',this)">Thunderstorm</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Heatwave',this)">Heatwave</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Fog',this)">Fog</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Dust Storm',this)">Dust Storm</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Strong Winds',this)">Strong Winds</button>
+   <span style="width:1px;background:var(--border);align-self:stretch"></span>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Verified',this)">Verified only</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('Pending Verification',this)">Pending</button>
+   <button class="filterBtn leaf-filter" onclick="filterLeaflet('High',this)">High severity</button>
+  </div>
+
+  <div class="mapLayout">
+   <div class="mapCanvasWrap" style="height:520px"><div id="leafletMap"></div></div>
+   <div class="mapSidepanel">
+    <div class="card mapInfo" id="mapInfo"><div class="sectionTitle">Selected Report</div><div class="empty">Click a marker to see report details here.</div></div>
+   </div>
+  </div>
+ </div>`;
+}
+
+function markerColor(r){
+ if(r.severity==="Critical") return "#d93025";
+ if(r.severity==="High") return "#f57c00";
+ if(r.status==="Verified") return "#159957";
+ return "#1976d2";
+}
+
+function initLeafletMap(){
+ const el = $("leafletMap");
+ if(!el || typeof L==="undefined") return;
+
+ if(leafletMap){ leafletMap.remove(); leafletMap=null; }
+
+ leafletMap = L.map("leafletMap", {scrollWheelZoom:true}).setView([22.5,79.5], 5);
+
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution:'&copy; OpenStreetMap contributors', maxZoom:18
+ }).addTo(leafletMap);
+
+ renderLeafletMarkers("all");
+}
+
+function renderLeafletMarkers(filter){
+ leafletFilter = filter;
+ if(!leafletMap) return;
+
+ leafletMarkers.forEach(m=>leafletMap.removeLayer(m));
+ leafletMarkers = [];
+
+ let data = reports.filter(r=>r.lat!==null && r.lat!==undefined);
+ if(filter==="Verified") data = data.filter(r=>r.status==="Verified");
+ else if(filter==="Pending Verification") data = data.filter(r=>r.status==="Pending Verification");
+ else if(filter==="High") data = data.filter(r=>r.severity==="High"||r.severity==="Critical");
+ else if(filter!=="all") data = data.filter(r=>r.event===filter);
+
+ data.forEach(r=>{
+  const marker = L.circleMarker([r.lat, r.lon], {
+   radius:9, color:"#fff", weight:2, fillColor:markerColor(r), fillOpacity:0.9
+  }).addTo(leafletMap);
+
+  marker.bindPopup(`
+   <strong>${escapeHTML(r.event)}</strong> — ${escapeHTML(r.city)}<br>
+   <span style="font-size:11px;color:#666">${statusBadge(r.status)}</span><br>
+   <button onclick="inspect('${r.id}')" style="margin-top:6px;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer">Open Full Report</button>
+  `);
+
+  marker.on("click", ()=>showMapInfo(r.id));
+  leafletMarkers.push(marker);
+ });
+}
+
+function filterLeaflet(filter, btn){
+ document.querySelectorAll(".leaf-filter").forEach(b=>b.classList.remove("active"));
+ if(btn) btn.classList.add("active");
+ renderLeafletMarkers(filter);
+}
+
+function showMapInfo(id){
+ const r = reports.find(x=>x.id===id);
+ const box = $("mapInfo");
+ if(!r || !box) return;
+ box.innerHTML = `
+  <div class="sectionTitle">${escapeHTML(r.city)}, ${escapeHTML(r.state)}</div>
+  <div class="infoRow"><div class="infoLabel">Event</div><div class="infoValue">${escapeHTML(r.event)} ${severityBadge(r.severity)}</div></div>
+  <div class="infoRow"><div class="infoLabel">Reported</div><div class="infoValue">${fmtTime(r.time)}</div></div>
+  <div class="infoRow"><div class="infoLabel">Status</div><div class="infoValue">${statusBadge(r.status)}</div></div>
+  <div class="infoRow"><div class="infoLabel">Overall Confidence</div><div class="infoValue">${r.verification?.trust ?? "—"}/100</div></div>
+  <button class="actionBtn primary" style="width:100%;margin-top:6px" onclick="inspect('${r.id}')">Open Full Report</button>`;
+}
+
+/* =========================================================
+   STATE HOTSPOTS / GIS INTELLIGENCE
+   ========================================================= */
+
+function hotspotsPage(){
+ const byState = {};
+ reports.forEach(r=>{
+  const s = r.state || "Unknown";
+  if(!byState[s]) byState[s] = { reports:0, verified:0, high:0, events:{} };
+  byState[s].reports++;
+  if(r.status==="Verified") byState[s].verified++;
+  if(r.severity==="High"||r.severity==="Critical") byState[s].high++;
+  byState[s].events[r.event] = (byState[s].events[r.event]||0)+1;
+ });
+
+ const rows = Object.entries(byState).map(([state,d])=>{
+  const dominant = Object.entries(d.events).sort((a,b)=>b[1]-a[1])[0];
+  return { state, ...d, dominant: dominant ? dominant[0] : "—" };
+ }).sort((a,b)=>b.reports-a.reports);
+
+ return `
+ <div class="pageHeader"><div><h1>State Hotspots &amp; GIS Intelligence</h1><p>Report density and dominant event type per state, computed from the current dataset.</p></div></div>
+
+ <div class="card">
+  <div class="tableWrap">
+   <table>
+    <thead><tr><th>State</th><th>Total Reports</th><th>Verified</th><th>High/Critical</th><th>Dominant Event</th></tr></thead>
+    <tbody>
+     ${rows.map(r=>`
+      <tr>
+       <td><strong>${escapeHTML(r.state)}</strong></td>
+       <td>${r.reports}</td>
+       <td style="color:#087a43">${r.verified}</td>
+       <td style="color:#b42318">${r.high}</td>
+       <td>${escapeHTML(r.dominant)}</td>
+      </tr>`).join("")}
+    </tbody>
+   </table>
+  </div>
+ </div>`;
+}
+
+/* =========================================================
+   DATA SOURCES PAGE
+   ========================================================= */
+
+function sourcesPage(){
+ const channels = {};
+ reports.forEach(r=>{ const c=r.channel||"Citizen App"; channels[c]=(channels[c]||0)+1; });
+
+ const info = {
+  "Citizen App": {status:"Live", detail:"Real submissions stored in this browser."},
+  "Social Media (#IMD)": {status:"Demo Data — Simulation Mode", detail:"Bulk platform scraping is restricted/paid; see Platform Architecture."},
+  "News RSS Feed": {status:"Demo Data — Simulation Mode", detail:"Illustrative of a news/RSS ingestion connector."},
+  "Public Dataset Sync": {status:"Demo Data — Simulation Mode", detail:"Illustrative of a scheduled open-dataset sync job."}
+ };
+
+ return `
+ <div class="pageHeader"><div><h1>Data Sources</h1><p>Every source badge tells you exactly what's live vs. simulated — never labelled as live unless it truly is.</p></div></div>
+
+ <div class="grid" style="grid-template-columns:repeat(2,1fr)">
+  ${Object.keys(info).map(name=>`
+   <div class="card">
+    <div class="sectionTitle">${escapeHTML(name)} <span class="badge ${info[name].status.startsWith('Live')?'green':'orange'}">${info[name].status}</span></div>
+    <p style="font-size:12px;color:var(--muted)">${info[name].detail}</p>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">Reports in this session: <strong>${channels[name]||0}</strong></div>
+   </div>`).join("")}
+  <div class="card">
+   <div class="sectionTitle">Open-Meteo Weather API <span class="badge green">Live — Connected</span></div>
+   <p style="font-size:12px;color:var(--muted)">Real public weather API, used to cross-verify every report against actual conditions. No key required.</p>
+   <div style="font-size:11px;color:var(--muted);margin-top:6px">Last used: ${reports.some(r=>r.verification?.checked) ? "this session" : "not yet"}</div>
+  </div>
+ </div>`;
+}
+
+/* =========================================================
+   ALERTS & DECISION SUPPORT (admin can create/edit/deactivate)
+   ========================================================= */
+
+function alertsPage(){
+ return `
+ <div class="pageHeader">
+  <div><h1>Alerts &amp; Decision Support</h1><p>Active advisories citizens see, and admin controls to manage them.</p></div>
+  ${currentRole==="admin" ? `<button class="actionBtn primary" onclick="openAlertForm()">+ Create Alert</button>` : ""}
+ </div>
+
+ <div class="grid alertGrid" id="alertsGrid">${alertsGridHTML()}</div>`;
+}
+
+function alertsGridHTML(){
+ const visible = currentRole==="admin" ? customAlerts : customAlerts.filter(a=>a.active);
+ if(!visible.length) return `<div class="card"><div class="empty"><div class="big">🚨</div>No active alerts right now.</div></div>`;
+
+ return visible.map(a=>`
+  <div class="card alertCard ${a.severity==='High'||a.severity==='Critical'?'warning':''}">
+   <div class="alertTitle">🚨 ${escapeHTML(a.title)} ${severityBadge(a.severity)} ${!a.active?'<span class="badge gray">INACTIVE</span>':''}</div>
+   <div class="alertText">${escapeHTML(a.text)}</div>
+   <div style="font-size:10.5px;color:var(--muted);margin-top:8px">Area: ${escapeHTML(a.area)} • ${timeAgo(a.time)}</div>
+   ${currentRole==="admin" ? `
+   <div style="margin-top:10px;display:flex;gap:6px">
+    <button class="actionBtn orange" onclick="toggleAlert('${a.id}')">${a.active?'Deactivate':'Activate'}</button>
+    <button class="actionBtn red" onclick="deleteAlert('${a.id}')">Delete</button>
+   </div>` : ""}
+  </div>
+ `).join("");
+}
+
+function openAlertForm(){
+ $("modalRoot").innerHTML = `
+  <div class="modalBack" onclick="if(event.target===this)closeModal()">
+   <div class="modal small">
+    <div class="modalHead"><div><span>NEW ALERT</span><h2>Create Advisory</h2></div><button class="closeBtn" onclick="closeModal()">×</button></div>
+    <div class="modalBody">
+     <form id="alertForm">
+      <div class="field" style="margin-bottom:10px"><label>Title *</label><input name="title" required></div>
+      <div class="field" style="margin-bottom:10px"><label>Event</label>
+       <select name="event">${EVENT_CATEGORIES.map(c=>`<option>${c}</option>`).join("")}</select>
+      </div>
+      <div class="field" style="margin-bottom:10px"><label>Severity</label>
+       <select name="severity"><option>Low</option><option>Medium</option><option selected>High</option><option>Critical</option></select>
+      </div>
+      <div class="field" style="margin-bottom:10px"><label>Affected Area</label><input name="area" placeholder="e.g. Pune, Mumbai, Nashik"></div>
+      <div class="field" style="margin-bottom:10px"><label>Advisory Text *</label><textarea name="text" required></textarea></div>
+      <button class="submitBtn" type="submit">Publish Alert</button>
+     </form>
+    </div>
+   </div>
+  </div>`;
+
+ $("alertForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const d = new FormData(e.target);
+  customAlerts.unshift({
+   id:uid("ALT"), title:d.get("title"), event:d.get("event"), severity:d.get("severity"),
+   area:d.get("area")||"Not specified", text:d.get("text"), active:true, time:new Date().toISOString()
+  });
+  saveCustomAlerts();
+  pushNotification(`New alert published: ${d.get("title")}`,"warn");
+  closeModal();
+  go("alerts");
+  toast("Alert published.","success");
+ });
+}
+
+function toggleAlert(id){
+ const a = customAlerts.find(x=>x.id===id);
+ if(!a) return;
+ a.active = !a.active;
+ saveCustomAlerts();
+ $("alertsGrid").innerHTML = alertsGridHTML();
+}
+
+function deleteAlert(id){
+ customAlerts = customAlerts.filter(x=>x.id!==id);
+ saveCustomAlerts();
+ $("alertsGrid").innerHTML = alertsGridHTML();
+}
+
+/* =========================================================
+   EMERGENCY ASSISTANCE (informational only — clearly labelled)
+   ========================================================= */
+
+function emergencyPage(){
+ return `
+ <div class="pageHeader"><div><h1>Emergency Assistance</h1><p>Informational safety resources. This page does not dispatch real emergency services.</p></div></div>
+
+ <div class="note warn" style="margin-bottom:15px">
+  <strong>Important:</strong> This is a hackathon prototype. Pressing "Call 112" opens your phone's
+  dialler for a real emergency call — it does not go through this platform. Nothing on this page
+  actually dispatches responders.
+ </div>
+
+ <div class="grid alertGrid">
+  <div class="card alertCard">
+   <div class="alertTitle">🚨 National Emergency Number</div>
+   <div class="alertText">Call 112 for police, fire or medical emergencies anywhere in India.</div>
+   <button class="actionBtn red" style="margin-top:12px" onclick="emergencyCall()">Call 112</button>
+  </div>
+  <div class="card alertCard">
+   <div class="alertTitle">📍 Share My Location</div>
+   <div class="alertText">Get your current GPS coordinates to relay to responders or family.</div>
+   <button class="actionBtn primary" style="margin-top:12px" onclick="shareMyLocation()">Get My Location</button>
+   <div id="locationOut" style="font-size:11.5px;margin-top:8px;color:var(--muted)"></div>
+  </div>
+  <div class="card alertCard">
+   <div class="alertTitle">📞 Disaster Management Helpline</div>
+   <div class="alertText">National Disaster Management Authority helpline: 1078 (toll-free).</div>
+  </div>
+  <div class="card alertCard warning">
+   <div class="alertTitle">⚠️ Flooding Safety</div>
+   <div class="alertText">Avoid walking or driving through flood water. Move to higher ground. Do not touch electrical equipment if wet.</div>
+  </div>
+  <div class="card alertCard warning">
+   <div class="alertTitle">🌡️ Heatwave Safety</div>
+   <div class="alertText">Stay hydrated, avoid outdoor activity 12 PM–4 PM, watch for signs of heatstroke (confusion, high body temperature).</div>
+  </div>
+  <div class="card alertCard warning">
+   <div class="alertTitle">🌪️ Thunderstorm Safety</div>
+   <div class="alertText">Stay indoors, avoid open fields and tall isolated trees, unplug sensitive electronics.</div>
+  </div>
+ </div>`;
+}
+
+async function shareMyLocation(){
+ const out = $("locationOut");
+ if(out) out.textContent = "Getting your location...";
+ try{
+  const pos = await getBrowserLocation();
+  if(out) out.innerHTML = `📍 <strong>${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}</strong> — copy this to share with responders or family.`;
+ }catch(err){
+  if(out) out.textContent = "Could not get location — check browser permissions.";
+ }
+}
+
+/* =========================================================
+   SEARCH + NOTIFICATIONS UI
+   ========================================================= */
+
+function runGlobalSearch(){
+ const q = ($("globalSearch")?.value || "").trim();
+ if(!q) return;
+ go("reports");
+ setTimeout(()=>{
+  const input = $("fSearch");
+  if(input){ input.value = q; filterReports(); }
+ },80);
+}
+
+function toggleNotifPanel(){
+ const panel = $("notifPanel");
+ if(!panel) return;
+ const willOpen = panel.classList.contains("hidden");
+ panel.classList.toggle("hidden");
+ if(willOpen){
+  notifications.forEach(n=>n.read=true);
+  saveNotifications();
+  updateNotifBadge();
+  panel.innerHTML = notifications.length ? notifications.map(n=>`
+   <div class="notifItem">
+    ${escapeHTML(n.text)}
+    <div class="t">${timeAgo(n.time)}</div>
+   </div>`).join("") : `<div class="notifItem">No notifications yet.</div>`;
+ }
+}
+
+document.addEventListener("click", e=>{
+ const panel = $("notifPanel");
+ if(panel && !panel.classList.contains("hidden")){
+  if(!panel.contains(e.target) && !e.target.closest("[onclick*=toggleNotifPanel]")){
+   panel.classList.add("hidden");
+  }
+ }
+});
+/* ---------- REPORT WEATHER EVENT (citizen form, with real GPS) ---------- */
+
+function reportFormPage(){
+ const nowLocal = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+
+ return `
+ <div class="pageHeader">
+  <div><h1>Report Weather Event</h1><p>Submit an observation. It's geocoded, classified and checked against live weather data automatically.</p></div>
+  <span class="badge blue">CITIZEN INPUT</span>
+ </div>
+
+ <div class="card">
+  <div class="note" style="margin-bottom:16px">Your report is verified against live public weather data and other nearby reports in this demo session (stored in this browser only).</div>
+
+  <button type="button" class="gpsBtn" id="gpsBtn" onclick="useGPS()">📍 Use My Current Location (GPS)</button>
+  <div id="gpsStatus" style="font-size:11px;margin:6px 0 14px;color:var(--muted)"></div>
+
+  <form id="weatherReportForm">
+   <div class="formGrid">
+    <div class="field"><label>Your Name</label><input name="name" placeholder="Enter your name"></div>
+    <div class="field"><label>Mobile Number</label><input name="mobile" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}"></div>
+    <div class="field"><label>State</label><input name="state" id="fState_input" placeholder="e.g. Maharashtra"></div>
+    <div class="field"><label>City *</label><input name="city" id="fCity_input" required placeholder="e.g. Pune"></div>
+    <div class="field">
+     <label>Weather Event *</label>
+     <select name="event" required>
+      <option value="">Select event</option>
+      ${EVENT_CATEGORIES.map(c=>`<option>${c}</option>`).join("")}
+      <option>Other</option>
+     </select>
+    </div>
+    <div class="field">
+     <label>Severity *</label>
+     <select name="severity" required><option value="">Select severity</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+    </div>
+    <div class="field">
+     <label>Date &amp; Time *</label>
+     <input name="datetime" type="datetime-local" required value="${nowLocal}">
+     <small>Automated verification works best within the last 5 days.</small>
+    </div>
+    <div class="field"><label>Landmark</label><input name="landmark" placeholder="Road, area or landmark"></div>
+    <div class="field full"><label>Description *</label><textarea name="description" required placeholder="Describe what you observed in your own words..."></textarea></div>
+    <div class="field">
+     <label>Evidence (photo or video, max 5 MB)</label>
+     <input id="evidenceFile" type="file" accept="image/*,video/*">
+     <div class="filePreview" id="filePreview"></div>
+    </div>
+   </div>
+   <input type="hidden" name="lat" id="fLat">
+   <input type="hidden" name="lon" id="fLon">
+   <div style="margin-top:16px"><button class="submitBtn" type="submit" id="submitBtnEl">📡 Submit Weather Report</button></div>
+  </form>
+ </div>`;
+}
+
+async function useGPS(){
+ const btn = $("gpsBtn"), status = $("gpsStatus");
+ if(btn){ btn.disabled=true; btn.textContent="Getting your location..."; }
+
+ try{
+  const pos = await getBrowserLocation();
+  $("fLat").value = pos.lat; $("fLon").value = pos.lon;
+
+  const place = await reverseGeocode(pos.lat, pos.lon);
+  if(place && place.city){
+   $("fCity_input").value = place.city;
+   $("fState_input").value = place.state || "";
+   status.textContent = `📍 Location captured: ${place.city}${place.state?", "+place.state:""} (${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)})`;
+  }else{
+   status.textContent = `📍 Coordinates captured (${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)}) — please type your city manually.`;
+  }
+ }catch(err){
+  status.textContent = "Could not get GPS location — check browser permissions, or enter your city manually.";
+ }finally{
+  if(btn){ btn.disabled=false; btn.textContent="📍 Use My Current Location (GPS)"; }
+ }
+}
+
+function setupReportForm(){
+ const input = $("evidenceFile");
+ if(input){
+  input.addEventListener("change", function(){
+   const file = input.files[0];
+   const preview = $("filePreview");
+   if(!file || !preview) return;
+   if(file.size > 5*1024*1024){
+    preview.innerHTML = `<div class="file-error">File is larger than 5 MB. Choose a smaller file.</div>`;
+    input.value=""; return;
+   }
+   preview.innerHTML = `<div class="file-selected">✓ Selected: <strong>${escapeHTML(file.name)}</strong> (${Math.round(file.size/1024)} KB)</div>`;
+  });
+ }
+
+ const form = $("weatherReportForm");
+ if(form && !form.dataset.bound){
+  form.dataset.bound = "1";
+  form.addEventListener("submit", function(e){
+   e.preventDefault();
+   if(!form.reportValidity()) return;
+   submitReport(form);
+  });
+ }
+}
+
+function readFileAsDataURL(file){
+ return new Promise((resolve,reject)=>{
+  const reader = new FileReader();
+  reader.onload = ()=>resolve(reader.result);
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+ });
+}
+
+async function submitReport(form){
+ const btn = $("submitBtnEl");
+ if(btn){ btn.disabled = true; btn.textContent = "Verifying against live weather data..."; }
+
+ const data = new FormData(form);
+ const file = $("evidenceFile")?.files?.[0] || null;
+
+ let media = [];
+ if(file){
+  try{
+   const dataUrl = await readFileAsDataURL(file);
+   if(file.size <= 700000) media.push({type:file.type.startsWith("video")?"video":"image", name:file.name, data:dataUrl});
+   else toast("Evidence file was too large to store in this demo (max ~700 KB) — report saved without it.","warn");
+  }catch(err){ console.warn("File read failed", err); }
+ }
+
+ const rawTime = data.get("datetime");
+ const timeIso = rawTime ? new Date(rawTime).toISOString() : new Date().toISOString();
+ const lat = data.get("lat") ? Number(data.get("lat")) : null;
+ const lon = data.get("lon") ? Number(data.get("lon")) : null;
+
+ const report = {
+  id: uid("CIT"), origin:"citizen", channel:"Citizen App",
+  name: (data.get("name")||"").trim() || "Anonymous Citizen",
+  mobile: (data.get("mobile")||"").trim(),
+  city: (data.get("city")||"").trim(), state: (data.get("state")||"").trim(),
+  landmark: (data.get("landmark")||"").trim(),
+  lat, lon,
+  event: data.get("event"), severity: data.get("severity"), time: timeIso,
+  description: (data.get("description")||"").trim(), media,
+  status: "Submitted", clusterId:null, auditTrail:[], feedback:null,
+  verification: { checked:false, trust:50, summary:"Verification in progress..." }
+ };
+
+ addAudit(report, "Report submitted by citizen.");
+ reports.unshift(report);
+ recordSubmission(report);
+ saveReports();
+
+ report.status = "AI Analyzing";
+ saveReports();
+
+ try{
+  const result = await runVerification(report, reports);
+  report.verification = result;
+  addAudit(report, `AI-assisted analysis completed — overall confidence ${result.trust}/100.`);
+  addAudit(report, `Duplicate check completed — ${result.duplicateOf ? "possible duplicate of "+result.duplicateOf : "no duplicate found"}.`);
+
+  if(result.trust>=78){ report.status="Verified"; recordOutcome(report,"Verified"); }
+  else if(result.trust<38){ report.status="Needs Review"; }
+  else report.status="Pending Verification";
+
+  addAudit(report, `Status set to ${report.status}.`);
+  saveReports();
+
+  pushNotification(`Report ${report.id} (${report.event}, ${report.city}) processed — ${report.status}, confidence ${result.trust}/100.`,
+   report.status==="Verified" ? "success" : report.status==="Needs Review" ? "warn" : "info");
+
+  if(report.severity==="Critical" || report.severity==="High"){
+   pushNotification(`⚠️ High-severity report: ${report.event} in ${report.city}.`,"warn");
+  }
+
+  toast(`Report ${report.id} submitted — ${report.status}, confidence ${result.trust}/100.`,"success");
+ }catch(err){
+  console.warn("Verification failed", err);
+  report.status = "Under Review";
+  addAudit(report, "Automated verification could not complete — queued for manual review.");
+  saveReports();
+  toast(`Report ${report.id} submitted. A reviewer will check it manually.`,"warn");
+ }
+
+ form.reset();
+ go("myreports");
+}
+
+/* ---------- MY REPORTS (citizen) ---------- */
+
+function myReportsPage(){
+ const mine = reports.filter(r=>r.origin==="citizen");
+
+ return `
+ <div class="pageHeader">
+  <div><h1>My Reports</h1><p>Reports submitted in this browser session.</p></div>
+  <button class="actionBtn primary" onclick="go('report')">+ New Report</button>
+ </div>
+
+ <div class="card">
+  ${mine.length ? reportTableHTML(mine) : `<div class="empty"><div class="big">📋</div>You haven't submitted any reports yet.<br><button class="actionBtn primary" style="margin-top:12px" onclick="go('report')">Report a Weather Event</button></div>`}
+ </div>`;
+}
+
+/* ---------- LIVE MULTI-SOURCE INGESTION SIMULATOR ---------- */
+
+const SIM_CHANNELS = ["Social Media (#IMD)","News RSS Feed","Public Dataset Sync"];
+const SIM_CITIES = [["Mumbai","Maharashtra"],["Delhi","Delhi"],["Chennai","Tamil Nadu"],["Kolkata","West Bengal"],
+ ["Bengaluru","Karnataka"],["Hyderabad","Telangana"],["Guwahati","Assam"],["Jaipur","Rajasthan"],
+ ["Lucknow","Uttar Pradesh"],["Bhopal","Madhya Pradesh"],["Ahmedabad","Gujarat"],["Pune","Maharashtra"]];
+const SIM_TEXTS = {
+ "Heavy Rainfall":"Heavy rain and waterlogging reported across several areas this evening.",
+ "Flooding":"Flood-like conditions with submerged roads reported by multiple users.",
+ "Thunderstorm":"Loud thunder and frequent lightning strikes reported over the last hour.",
+ "Heatwave":"Extreme heat and scorching conditions reported, residents advised to stay indoors.",
+ "Fog":"Dense fog reducing visibility significantly reported this morning.",
+ "Dust Storm":"Dust storm reducing visibility and causing minor disruption reported.",
+ "Strong Winds":"Strong gusty winds reported, minor damage to loose structures noted."
+};
+
+function ingestionPage(){
+ return `
+ <div class="pageHeader">
+  <div><h1>Live Multi-Source Ingestion</h1><p>Demonstrates how items from social media, news feeds and public datasets would flow through this exact verification pipeline. <strong>Simulated ingestion, real processing logic.</strong></p></div>
+  <button class="actionBtn primary" id="simBtn" onclick="runIngestionSimulation()">▶ Simulate Incoming Reports</button>
+ </div>
+
+ <div class="card">
+  <div class="sectionTitle">COLLECT → CLEAN → ANALYZE → CORRELATE → VERIFY → VISUALIZE → ALERT</div>
+  <div class="pipeline" style="flex-wrap:wrap">
+   <div class="pipe"><span class="pipeIcon">📡</span>Collect</div><div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🧹</span>Clean</div><div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🤖</span>Analyze</div><div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🔗</span>Correlate</div><div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🛂</span>Verify</div><div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🗺️</span>Visualize</div><div class="arrow">→</div>
+   <div class="pipe"><span class="pipeIcon">🚨</span>Alert</div>
+  </div>
+ </div>
+
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">Live Intake Feed</div>
+  <div id="intakeFeed" class="intakeFeed"><div class="empty">Click "Simulate Incoming Reports" to see multi-source items processed live.</div></div>
+ </div>`;
+}
+
+async function runIngestionSimulation(){
+ if(ingestionRunning) return;
+ ingestionRunning = true;
+
+ const btn = $("simBtn"); if(btn){ btn.disabled=true; btn.textContent="Simulating..."; }
+ const feed = $("intakeFeed");
+ feed.innerHTML = "";
+
+ const batchSize = 4 + Math.floor(Math.random()*3);
+
+ for(let i=0;i<batchSize;i++){
+  const channel = SIM_CHANNELS[Math.floor(Math.random()*SIM_CHANNELS.length)];
+  const [city,state] = SIM_CITIES[Math.floor(Math.random()*SIM_CITIES.length)];
+  const event = EVENT_CATEGORIES[Math.floor(Math.random()*EVENT_CATEGORIES.length)];
+  const coords = KNOWN_CITIES[city.toLowerCase()] || [22.5,79.5];
+
+  const itemId = "sim-"+i+"-"+Date.now();
+  const stages = ["Ingested","Deduplicated","Geocoded","Categorized","Weather-Checked","Scored"];
+
+  const row = document.createElement("div");
+  row.className = "intakeItem";
+  row.innerHTML = `
+   <div class="intakeHead">
+    <span class="intakeChannel">${escapeHTML(channel)}</span>
+    <span class="intakeStage" id="${itemId}-stage">Ingested</span>
+   </div>
+   <div>${escapeHTML(SIM_TEXTS[event])} <strong>(${escapeHTML(city)})</strong></div>
+   <div class="stageTrack">${stages.map((s,idx)=>`<div class="stageDot" id="${itemId}-dot-${idx}"></div>`).join("")}</div>
+  `;
+  feed.prepend(row);
+
+  for(let s=0; s<stages.length; s++){
+   await new Promise(r=>setTimeout(r, 260));
+   const dot = $(`${itemId}-dot-${s}`);
+   const label = $(`${itemId}-stage`);
+   if(dot) dot.classList.add(s===stages.length-1 ? "done" : "on");
+   if(label){ label.textContent = stages[s]; if(s===stages.length-1) label.classList.add("done"); }
+  }
+
+  const report = {
+   id: uid("SIM"), origin:"simulated", channel,
+   name:`Simulated: ${channel} signal`, mobile:"",
+   city, state, landmark:"", lat:coords[0], lon:coords[1],
+   event, severity: ["Low","Medium","High"][Math.floor(Math.random()*3)],
+   time: isoHoursAgo(Math.random()*3),
+   description: `[Simulated ${channel} signal] ${SIM_TEXTS[event]}`,
+   media:[], status:"Pending Verification", clusterId:null, auditTrail:[], feedback:null,
+   verification:{checked:false, trust:50, summary:"Verification in progress..."}
+  };
+  addAudit(report, `Ingested from simulated source: ${channel}.`);
+
+  reports.unshift(report);
+
+  try{
+   const result = await runVerification(report, reports);
+   report.verification = result;
+   report.status = result.trust>=75 ? "Verified" : result.trust<40 ? "Needs Review" : "Pending Verification";
+   addAudit(report, `Automated verification completed — confidence ${result.trust}/100.`);
+  }catch(err){ /* leave as pending */ }
+
+  saveReports();
+  pushNotification(`New ${event} report ingested from ${channel} (${city}).`,"info");
+ }
+
+ if(btn){ btn.disabled=false; btn.textContent="▶ Simulate Incoming Reports"; }
+ ingestionRunning = false;
+ toast(`Simulated ${batchSize} incoming reports across ${SIM_CHANNELS.length} source types.`,"success");
+}
+
+/* ---------- SYSTEM HEALTH ---------- */
+
+function healthPage(){
+ const apiOk = navigator.onLine;
+ return `
+ <div class="pageHeader"><div><h1>System Health</h1><p>Prototype component status.</p></div></div>
+ <div class="grid healthGrid">
+  <div class="card health"><div class="healthCircle" style="background:${apiOk?'#159957':'#f57c00'}">${apiOk?'OK':'?'}</div><strong>Network</strong><p style="font-size:11px;color:var(--muted)">${apiOk ? "Online — live weather checks and geocoding should work." : "Offline — verification falls back to manual review."}</p></div>
+  <div class="card health"><div class="healthCircle" style="background:#159957">OK</div><strong>Local Storage</strong><p style="font-size:11px;color:var(--muted)">${reports.length} reports stored in this browser (demo database).</p></div>
+  <div class="card health"><div class="healthCircle" style="background:#1976d2">OK</div><strong>Map / Charts</strong><p style="font-size:11px;color:var(--muted)">Leaflet + OpenStreetMap and Chart.js loaded from CDN.</p></div>
+ </div>
+ ${currentRole==="admin" ? `
+ <div class="card" style="margin-top:15px">
+  <div class="sectionTitle">Reset Demo Data</div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Restores the original sample dataset, notifications and alerts.</p>
+  <button class="actionBtn red" onclick="resetDemo()">Reset Prototype Data</button>
+ </div>` : ""}`;
+}
+
+function resetDemo(){
+ const ok = confirm("Reset all prototype data to the original demo dataset?");
+ if(!ok && currentRole) return;
+ reports = JSON.parse(JSON.stringify(seedReports));
+ notifications = [];
+ customAlerts = loadCustomAlerts();
+ saveReports(); saveNotifications(); saveCustomAlerts();
+ if(currentRole) go("overview");
+ toast("Prototype data reset.","success");
+}
+
+/* ---------- INVESTIGATION MODAL ---------- */
+
+function inspect(id){
+ const r = reports.find(x=>x.id===id);
+ if(!r) return;
+
+ const v = r.verification || {};
+
+ const mediaHTML = (r.media||[]).length ? `<div class="mediaThumbs">${r.media.map(m=> m.type==="video" ? `<video src="${m.data}" controls></video>` : `<img src="${m.data}" alt="${escapeHTML(m.name)}">`).join("")}</div>` : `<div style="font-size:11.5px;color:var(--muted);margin-top:6px">No evidence attached.</div>`;
+
+ const correlationHTML = `
+  <div class="correlationChain">
+   <div class="chainStep support">📝 Citizen/source reports <strong>${escapeHTML(r.event)}</strong> in ${escapeHTML(r.city)}</div>
+   <div class="chainArrowDown">↓</div>
+   <div class="chainStep ${v.corroboration>0?'support':''}">🔗 ${v.corroboration||0} nearby report(s) ${v.corroboration>0?'also indicate':'found for'} the same event</div>
+   <div class="chainArrowDown">↓</div>
+   <div class="chainStep ${v.agrees===true?'support':''}">🌦️ Live weather data ${v.agrees===true?'supports':v.agrees===false?'conflicts with':'is inconclusive for'} this event</div>
+   <div class="chainArrowDown">↓</div>
+   <div class="chainStep ${v.trust>=75?'support':''}">🤖 Overall AI-assisted confidence: <strong>${v.trust ?? '—'}/100</strong></div>
+   <div class="chainArrowDown">↓</div>
+   <div class="chainStep">🛂 ${r.status==='Verified'?'Admin has verified this event':'Awaiting admin review'}</div>
+  </div>`;
+
+ const auditHTML = (r.auditTrail||[]).length ? r.auditTrail.map(a=>`
+   <div class="auditItem"><span class="auditTime">${fmtTime(a.time)}</span><span>${escapeHTML(a.text)}</span></div>
+  `).join("") : `<div style="font-size:11.5px;color:var(--muted)">No audit entries yet.</div>`;
+
+ const feedbackHTML = (currentRole==="user" && r.status==="Verified") ? `
+  <div class="verifyPanel">
+   <div class="sectionTitle" style="margin-bottom:6px">💬 Was this information useful?</div>
+   ${r.feedback ? `<div style="font-size:12px;color:var(--muted)">You rated this ${r.feedback.rating}/5${r.feedback.comment?': "'+escapeHTML(r.feedback.comment)+'"':''}. Thank you.</div>` : `
+   <div class="starRow" id="starRow">${[1,2,3,4,5].map(n=>`<button type="button" class="starBtn" data-n="${n}" onclick="setStar('${r.id}',${n})">★</button>`).join("")}</div>
+   <textarea id="fbComment" placeholder="Optional comment..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;margin-top:6px"></textarea>
+   <button class="actionBtn primary" style="margin-top:8px" onclick="submitFeedback('${r.id}')">Submit Feedback</button>
+   `}
+  </div>` : "";
+
+ $("modalRoot").innerHTML = `
+  <div class="modalBack" onclick="if(event.target===this)closeModal()">
+   <div class="modal">
+    <div class="modalHead">
+     <div><span>REPORT ${escapeHTML(r.id)}</span><h2>${escapeHTML(r.event)} — ${escapeHTML(r.city)}</h2></div>
+     <button class="closeBtn" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="modalBody">
+     <div class="detailGrid">
+      <div class="infoRow"><div class="infoLabel">Source</div><div class="infoValue">${originBadge(r)} ${escapeHTML(r.name||"")}</div></div>
+      <div class="infoRow"><div class="infoLabel">Location</div><div class="infoValue">${escapeHTML(r.city)}, ${escapeHTML(r.state)}${r.landmark?" — "+escapeHTML(r.landmark):""}</div></div>
+      <div class="infoRow"><div class="infoLabel">Severity</div><div class="infoValue">${severityBadge(r.severity)}</div></div>
+      <div class="infoRow"><div class="infoLabel">Status</div><div class="infoValue">${statusBadge(r.status)}</div></div>
+      <div class="infoRow"><div class="infoLabel">Reported At</div><div class="infoValue">${fmtTime(r.time)}</div></div>
+      <div class="infoRow"><div class="infoLabel">Coordinates</div><div class="infoValue">${r.lat?r.lat.toFixed(3)+", "+r.lon.toFixed(3):"Not resolved"}</div></div>
+     </div>
+
+     <div class="infoRow"><div class="infoLabel">Description</div><div class="infoValue" style="font-weight:400">${escapeHTML(r.description)}</div></div>
+
+     <div class="infoLabel" style="margin-top:10px">Evidence</div>
+     ${mediaHTML}
+
+     <div class="verifyPanel">
+      <div class="sectionTitle" style="margin-bottom:2px">🤖 AI-Assisted Analysis <span class="badge gray">DEMO SIGNALS — NOT CERTAIN TRUTH</span></div>
+      <div class="confidenceGrid">
+       <div class="confBox"><div class="num">${v.eventClassConfidence ?? 0}%</div><div class="lbl">Event Classification</div></div>
+       <div class="confBox"><div class="num">${v.evidenceCompleteness ?? 0}%</div><div class="lbl">Evidence Completeness</div></div>
+       <div class="confBox"><div class="num">${v.crossSourceAgreement ?? 0}%</div><div class="lbl">Cross-Source Agreement</div></div>
+       <div class="confBox"><div class="num" style="color:${trustColor(v.trust||0)}">${v.trust ?? 0}%</div><div class="lbl">Overall Confidence</div></div>
+      </div>
+      ${v.predictedCategory ? `<div class="categoryCheck ${v.categoryMatch===false?'mismatch':'match'}">${v.categoryMatch===false ? `⚠️ Description text reads more like <strong>${escapeHTML(v.predictedCategory)}</strong> than the selected category` : `✓ Description text is consistent with the selected category`}</div>` : ""}
+      ${(v.flags||[]).length ? `<div style="margin-top:8px">${v.flags.map(f=>`<span class="flagChip ${f.toLowerCase().includes('conflict')||f.toLowerCase().includes('duplicate')?'severe':''}">${escapeHTML(f)}</span>`).join("")}</div>` : ""}
+      <div class="verifySummary">${escapeHTML(v.summary || "Not yet verified.")}</div>
+     </div>
+
+     <div class="verifyPanel">
+      <div class="sectionTitle" style="margin-bottom:2px">🔗 Cross-Source Correlation</div>
+      ${correlationHTML}
+     </div>
+
+     <div class="verifyPanel">
+      <div class="sectionTitle" style="margin-bottom:2px">🧾 Audit Trail</div>
+      ${auditHTML}
+     </div>
+
+     ${feedbackHTML}
+    </div>
+
+    ${currentRole==="admin" ? `
+    <div class="modalActions">
+     <button class="actionBtn green" onclick="changeStatus('${r.id}','Verified')">✓ Verify</button>
+     <button class="actionBtn orange" onclick="changeStatus('${r.id}','Needs Review')">⌕ Needs Review</button>
+     <button class="actionBtn red" onclick="changeStatus('${r.id}','Rejected')">× Reject</button>
+     ${(r.status==="Verified" && (r.severity==="High"||r.severity==="Critical")) ? `<button class="actionBtn gold" onclick="downloadCapXML('${r.id}')">⬇ Export CAP Alert</button>` : ""}
+    </div>` : ""}
+   </div>
+  </div>`;
+}
+
+function closeModal(){ const root=$("modalRoot"); if(root) root.innerHTML=""; }
+
+function changeStatus(id, status){
+ if(currentRole!=="admin"){ toast("Switch to Government Admin to verify reports.","error"); return; }
+ const report = reports.find(r=>r.id===id);
+ if(!report) return;
+
+ report.status = status;
+ addAudit(report, `Admin changed status to ${status}.`);
+ recordOutcome(report, status);
+ saveReports();
+ pushNotification(`Report ${id} marked as ${status} by admin.`, status==="Verified"?"success":status==="Rejected"?"error":"warn");
+ closeModal();
+ go(currentPage);
+ toast(`${id} updated to ${status}.`,"success");
+}
+
+/* ---------- FEEDBACK ---------- */
+
+let pendingStar = 0;
+function setStar(id, n){
+ pendingStar = n;
+ document.querySelectorAll("#starRow .starBtn").forEach(b=>{
+  b.classList.toggle("on", Number(b.dataset.n)<=n);
+ });
+}
+
+function submitFeedback(id){
+ const report = reports.find(r=>r.id===id);
+ if(!report) return;
+ if(!pendingStar){ toast("Please select a star rating.","error"); return; }
+ report.feedback = { rating: pendingStar, comment: ($("fbComment")?.value||"").trim() };
+ addAudit(report, `Citizen submitted feedback: ${pendingStar}/5.`);
+ saveReports();
+ pendingStar = 0;
+ inspect(id);
+ toast("Thanks for your feedback.","success");
+}
+
+/* ---------- EMERGENCY CALL ---------- */
+
+function emergencyCall(){
+ const ok = confirm("PROTOTYPE ONLY\n\nThis does not place real emergency calls through the platform.\n\nIt will open your phone's dialler for a real call to 112.\n\nContinue?");
+ if(ok) window.location.href = "tel:112";
+}
+
+/* ---------- STARTUP ---------- */
+
+function startApplication(){
+ document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
+ updateNotifBadge();
+
+ if(currentRole==="user" || currentRole==="admin"){
+  enterRole(currentRole);
+ }
+}
+
+window.go=go; window.enterRole=enterRole; window.switchRole=switchRole; window.logout=logout;
+window.toggleMenu=toggleMenu; window.inspect=inspect; window.closeModal=closeModal;
+window.changeStatus=changeStatus; window.filterMap=filterMap; window.filterLeaflet=filterLeaflet;
+window.showMapInfo=showMapInfo; window.filterReports=filterReports; window.resetDemo=resetDemo;
+window.emergencyCall=emergencyCall; window.useGPS=useGPS; window.runIngestionSimulation=runIngestionSimulation;
+window.openAlertForm=openAlertForm; window.toggleAlert=toggleAlert; window.deleteAlert=deleteAlert;
+window.shareMyLocation=shareMyLocation; window.runGlobalSearch=runGlobalSearch; window.toggleNotifPanel=toggleNotifPanel;
+window.setStar=setStar; window.submitFeedback=submitFeedback; window.downloadCapXML=downloadCapXML;
+
+startApplication();
+
+})();
+</script>
+
+</body>
+</html>
